@@ -5,35 +5,47 @@ export const createControls = (
 ): Phaser.Types.Input.Keyboard.CursorKeys => {
   return scene.input.keyboard.createCursorKeys();
 };
-
 export const configControls = (
   player: Player,
   controls: Phaser.Types.Input.Keyboard.CursorKeys,
   scene: Phaser.Scene
 ): void => {
-  player.setVelocityX(0);
-  player.setVelocityY(0);
+  player.setVelocity(0);
 
+  // Movimento horizontal
   if (controls.right.isDown) {
-    moveRight(player);
-    return;
+    player.setFlipX(false);
+    player.setVelocityX(defaultVelocity);
   }
 
   if (controls.left.isDown) {
-    moveLeft(player);
-    return;
+    player.setFlipX(true);
+    player.setVelocityX(-defaultVelocity);
   }
 
+  // Movimento vertical
   if (controls.up.isDown) {
-    moveUp(player);
-    return;
+    player.setVelocityY(-defaultVelocity);
   }
 
   if (controls.down.isDown) {
-    moveDown(player);
+    player.setVelocityY(defaultVelocity);
+  }
+
+  // Animação de movimento
+  if (
+    controls.right.isDown ||
+    controls.left.isDown ||
+    controls.up.isDown ||
+    controls.down.isDown
+  ) {
+    if (!player.isAttacking) {
+      player.anims.play("player_walk", true);
+    }
     return;
   }
 
+  // Ataque
   if (controls.space.isDown) {
     if (!player.isAttacking) {
       attack(player);
@@ -41,33 +53,13 @@ export const configControls = (
     return;
   }
 
+  // Idle
   if (!player.isAttacking) {
     player.anims.play("player_idle", true);
   }
 };
 
 const defaultVelocity = 100;
-const moveRight = (player): void => {
-  player.setFlipX(false);
-  player.anims.play("player_walk", true);
-  player.setVelocityX(defaultVelocity);
-};
-
-const moveLeft = (player): void => {
-  player.setFlipX(true);
-  player.anims.play("player_walk", true);
-  player.setVelocityX(-defaultVelocity);
-};
-
-const moveUp = (player): void => {
-  player.anims.play("player_walk", true);
-  player.setVelocityY(-defaultVelocity);
-};
-
-const moveDown = (player): void => {
-  player.anims.play("player_walk", true);
-  player.setVelocityY(defaultVelocity);
-};
 
 const attack = (player: Player): void => {
   player.isAttacking = true;
