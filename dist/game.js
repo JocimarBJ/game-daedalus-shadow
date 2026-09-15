@@ -15,7 +15,7 @@ var MyGame = (function () {
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
-    /* global Reflect, Promise */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
     var extendStatics = function(d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -31,6 +31,11 @@ var MyGame = (function () {
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
 
     /******/ var __webpack_modules__ = ({
 
@@ -241572,29 +241577,65 @@ var MyGame = (function () {
     })();
 
     var __webpack_exports__AUTO = __webpack_exports__.B7;
+    __webpack_exports__.eX;
+    __webpack_exports__.FK;
+    __webpack_exports__.de;
+    __webpack_exports__.Wk;
+    __webpack_exports__.Ct;
+    __webpack_exports__.vt;
+    __webpack_exports__.QY;
+    __webpack_exports__.Qj;
+    __webpack_exports__.fS;
+    __webpack_exports__.SO;
+    __webpack_exports__.WV;
+    __webpack_exports__.Vw;
+    __webpack_exports__.sS;
+    __webpack_exports__.zW;
+    __webpack_exports__.py;
+    __webpack_exports__.FX;
     var __webpack_exports__Game = __webpack_exports__.lA;
+    __webpack_exports__.hi;
+    __webpack_exports__.v6;
+    __webpack_exports__.vS;
+    __webpack_exports__.II;
+    __webpack_exports__.RL;
+    __webpack_exports__.aN;
+    __webpack_exports__.ZX;
+    __webpack_exports__.Hn;
+    __webpack_exports__.wI;
+    __webpack_exports__.Vn;
+    __webpack_exports__.pX;
+    __webpack_exports__.Th;
+    __webpack_exports__.Ci;
+    __webpack_exports__.Yp;
     var __webpack_exports__Scene = __webpack_exports__.xs;
+    __webpack_exports__._t;
+    __webpack_exports__.$u;
+    __webpack_exports__.Ut;
+    __webpack_exports__.tx;
+    __webpack_exports__.ak;
+    __webpack_exports__.qp;
+    __webpack_exports__.oJ;
+    __webpack_exports__.UP;
+    __webpack_exports__.cQ;
+    __webpack_exports__.q4;
+    __webpack_exports__.$z;
 
     var createPlayer = function (scene) {
-        var player = scene.physics.add.sprite(200, 200, "player_idle");
+        var player = scene.physics.add.sprite(400, 32, "player_idle");
         createAnimations(scene, player);
         return player;
     };
     var loadSprites = function (scene) {
         scene.load.spritesheet("player_idle", "./assets/player/idle.png", {
-            frameWidth: 83,
-            frameHeight: 64,
-            spacing: 45,
+            frameWidth: 40,
+            frameHeight: 150,
+            spacing: 110,
         });
         scene.load.spritesheet("player_walk", "./assets/player/walk.png", {
-            frameWidth: 83,
-            frameHeight: 64,
-            spacing: 45,
-        });
-        scene.load.spritesheet("player_attack", "./assets/player/attack.png", {
-            frameWidth: 83,
-            frameHeight: 64,
-            spacing: 45,
+            frameWidth: 150,
+            frameHeight: 150,
+            spacing: 0,
         });
     };
     var createAnimations = function (scene, player) {
@@ -241602,9 +241643,9 @@ var MyGame = (function () {
             key: "player_idle",
             frames: scene.anims.generateFrameNames("player_idle", {
                 start: 0,
-                end: 7,
+                end: 15,
             }),
-            frameRate: 8,
+            frameRate: 15,
             repeat: -1,
             yoyo: true,
         });
@@ -241612,24 +241653,12 @@ var MyGame = (function () {
             key: "player_walk",
             frames: scene.anims.generateFrameNames("player_walk", {
                 start: 0,
-                end: 6,
+                end: 11,
             }),
-            frameRate: 8,
+            frameRate: 45,
             repeat: -1,
         });
-        scene.anims.create({
-            key: "player_attack",
-            frames: scene.anims.generateFrameNames("player_attack", {
-                start: 0,
-                end: 3,
-            }),
-            frameRate: 12,
-            repeat: 0,
-        });
         player.on("animationcomplete", function (animation, frame) {
-            if (animation.key === "player_attack") {
-                player.isAttacking = false;
-            }
         }, scene);
     };
 
@@ -241665,7 +241694,7 @@ var MyGame = (function () {
             player.anims.play("player_idle", true);
         }
     };
-    var defaultVelocity = 200;
+    var defaultVelocity = 100;
     var moveRight = function (player) {
         player.setFlipX(false);
         player.anims.play("player_walk", true);
@@ -241695,20 +241724,35 @@ var MyGame = (function () {
             return _super.call(this, "demo") || this;
         }
         Demo.prototype.preload = function () {
-            this.load.image("tiles", "./assets/map/grass.png");
-            this.load.image("border", "./assets/map/water.png");
+            this.load.image("gramas", "./assets/map/grass2.png");
+            this.load.image("paredes", "./assets/map/walls.png");
+            this.load.image("chaos", "./assets/map/floors.png");
             this.load.tilemapTiledJSON("map", "./assets/map/map.json");
             loadSprites(this);
         };
         Demo.prototype.create = function () {
             var map = this.make.tilemap({ key: "map" });
-            var tilesetGrass = map.addTilesetImage("grass", "tiles");
-            var tilesetWater = map.addTilesetImage("water", "border");
+            var tilesetFloor = map.addTilesetImage("floors", "chaos");
+            if (!tilesetFloor) {
+                throw new Error("Não foi possível carregar um dos tilesets do chão.");
+            }
+            map.createLayer("floors", tilesetFloor, 0, 0);
+            var tilesetGrass = map.addTilesetImage("grass", "gramas");
+            if (!tilesetGrass) {
+                throw new Error("Não foi possível carregar um dos tilesets da grama.");
+            }
             map.createLayer("grass", tilesetGrass, 0, 0);
-            this.water = map.createLayer("water", tilesetWater, 0, 0);
-            this.water.setCollisionByProperty({ collider: true });
+            var tilesetWalls = map.addTilesetImage("walls", "paredes");
+            if (!tilesetWalls) {
+                throw new Error("Não foi possível carregar um dos tilesets do muro.");
+            }
+            this.walls = map.createLayer("walls", tilesetWalls, 0, 0);
+            this.walls.setCollisionByProperty({ collider: false });
+            this.walls.setCollisionBetween(1, 36);
             this.player = createPlayer(this);
-            this.physics.add.collider(this.player, this.water);
+            this.player.body.setSize(22, 22);
+            this.player.body.setOffset(64, 96);
+            this.physics.add.collider(this.player, this.walls);
             this.player.anims.play("player_idle", true);
             this.controls = createControls(this);
         };

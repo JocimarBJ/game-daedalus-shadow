@@ -4,32 +4,49 @@ import { createControls, configControls } from "./controls";
 
 export default class Demo extends Phaser.Scene {
   player;
+  walls;
   controls;
-  water;
 
   constructor() {
     super("demo");
   }
 
   preload() {
-    this.load.image("tiles", "./assets/map/grass.png");
-    this.load.image("border", "./assets/map/water.png");
+    this.load.image("gramas", "./assets/map/grass2.png");
+    this.load.image("paredes", "./assets/map/walls.png");
+    this.load.image("chaos", "./assets/map/floors.png");
     this.load.tilemapTiledJSON("map", "./assets/map/map.json");
     loadSprites(this);
   }
 
   create() {
     const map = this.make.tilemap({ key: "map" });
-    const tilesetGrass = map.addTilesetImage("grass", "tiles");
-    const tilesetWater = map.addTilesetImage("water", "border");
 
-    const ground = map.createLayer("grass", tilesetGrass, 0, 0);
-    this.water = map.createLayer("water", tilesetWater, 0, 0);
+    const tilesetFloor = map.addTilesetImage("floors", "chaos");
+    if (!tilesetFloor) {
+      throw new Error("Não foi possível carregar um dos tilesets do chão.");
+    }
+    const floor = map.createLayer("floors", tilesetFloor, 0, 0);
 
-    this.water.setCollisionByProperty({ collider: true });
+    const tilesetGrass = map.addTilesetImage("grass", "gramas");
+    if (!tilesetGrass) {
+      throw new Error("Não foi possível carregar um dos tilesets da grama.");
+    }
+    const grass = map.createLayer("grass", tilesetGrass, 0, 0);
+
+    const tilesetWalls = map.addTilesetImage("walls","paredes");
+    if (!tilesetWalls) {
+      throw new Error("Não foi possível carregar um dos tilesets do muro.");
+    }
+    this.walls = map.createLayer("walls", tilesetWalls, 0, 0);
+    this.walls.setCollisionByProperty({ collider: false });
+    this.walls.setCollisionBetween(1, 36);
+    
 
     this.player = createPlayer(this);
-    this.physics.add.collider(this.player, this.water);
+    this.player.body.setSize(22, 22);
+    this.player.body.setOffset(64, 96);
+    this.physics.add.collider(this.player, this.walls);
 
     this.player.anims.play("player_idle", true);
     this.controls = createControls(this);
@@ -38,6 +55,8 @@ export default class Demo extends Phaser.Scene {
   update() {
     configControls(this.player, this.controls, this);
   }
+
+  
 }
 
 const config = {

@@ -46,7 +46,7 @@ export const configControls = (
   }
 };
 
-const defaultVelocity = 200;
+const defaultVelocity = 100;
 const moveRight = (player): void => {
   player.setFlipX(false);
   player.anims.play("player_walk", true);
