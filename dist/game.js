@@ -241666,53 +241666,46 @@ var MyGame = (function () {
         return scene.input.keyboard.createCursorKeys();
     };
     var configControls = function (player, controls, scene) {
-        player.setVelocityX(0);
-        player.setVelocityY(0);
+        player.setVelocity(0);
+        // Movimento horizontal
         if (controls.right.isDown) {
-            moveRight(player);
-            return;
+            player.setFlipX(false);
+            player.setVelocityX(defaultVelocity);
         }
         if (controls.left.isDown) {
-            moveLeft(player);
-            return;
+            player.setFlipX(true);
+            player.setVelocityX(-defaultVelocity);
         }
+        // Movimento vertical
         if (controls.up.isDown) {
-            moveUp(player);
-            return;
+            player.setVelocityY(-defaultVelocity);
         }
         if (controls.down.isDown) {
-            moveDown(player);
+            player.setVelocityY(defaultVelocity);
+        }
+        // Animação de movimento
+        if (controls.right.isDown ||
+            controls.left.isDown ||
+            controls.up.isDown ||
+            controls.down.isDown) {
+            if (!player.isAttacking) {
+                player.anims.play("player_walk", true);
+            }
             return;
         }
+        // Ataque
         if (controls.space.isDown) {
             if (!player.isAttacking) {
                 attack(player);
             }
             return;
         }
+        // Idle
         if (!player.isAttacking) {
             player.anims.play("player_idle", true);
         }
     };
     var defaultVelocity = 100;
-    var moveRight = function (player) {
-        player.setFlipX(false);
-        player.anims.play("player_walk", true);
-        player.setVelocityX(defaultVelocity);
-    };
-    var moveLeft = function (player) {
-        player.setFlipX(true);
-        player.anims.play("player_walk", true);
-        player.setVelocityX(-defaultVelocity);
-    };
-    var moveUp = function (player) {
-        player.anims.play("player_walk", true);
-        player.setVelocityY(-defaultVelocity);
-    };
-    var moveDown = function (player) {
-        player.anims.play("player_walk", true);
-        player.setVelocityY(defaultVelocity);
-    };
     var attack = function (player) {
         player.isAttacking = true;
         player.anims.play("player_attack", true);
@@ -241749,15 +241742,35 @@ var MyGame = (function () {
             this.walls = map.createLayer("walls", tilesetWalls, 0, 0);
             this.walls.setCollisionByProperty({ collider: false });
             this.walls.setCollisionBetween(1, 36);
+            this.lights.enable();
+            this.lights.setAmbientColor(0x000000);
             this.player = createPlayer(this);
+            // configuracoes de hitbox do player
             this.player.body.setSize(22, 22);
             this.player.body.setOffset(64, 96);
             this.physics.add.collider(this.player, this.walls);
             this.player.anims.play("player_idle", true);
             this.controls = createControls(this);
+            // Configuracoes de luz no player e do ambiente
+            // Ativar e desativar descomentando.
+            // floor.setPipeline("Light2D");
+            // grass.setPipeline("Light2D");
+            // this.walls.setPipeline("Light2D");
+            // this.lights.enable();
+            // this.lights.setAmbientColor(0x000000);
+            // this.player.setPipeline("Light2D");
+            // this.playerLight = this.lights.addLight(
+            //   this.player.x,
+            //   this.player.y - 20,
+            //   100,
+            //   0x5cc4bc,
+            //   1.3
+            // );
         };
         Demo.prototype.update = function () {
             configControls(this.player, this.controls);
+            // atualizar luz do player (acompanhar ele)
+            //this.playerLight.setPosition(this.player.x, this.player.y - 20);
         };
         return Demo;
     }(__webpack_exports__Scene));
