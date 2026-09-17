@@ -2,6 +2,9 @@ import * as Phaser from "phaser";
 import { createPlayer, loadSprites } from "./player";
 import { createControls, configControls } from "./controls";
 
+// Habilitar/Desabilitar Dynamic Light
+const enableDynamicLighting = true;
+
 export default class Demo extends Phaser.Scene {
   player;
   walls;
@@ -43,42 +46,43 @@ export default class Demo extends Phaser.Scene {
     this.walls.setCollisionByProperty({ collider: false });
     this.walls.setCollisionBetween(1, 36);
 
-    this.lights.enable();
-    this.lights.setAmbientColor(0x000000);
-    
-
+    this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.player = createPlayer(this);
 
     // configuracoes de hitbox do player
     this.player.body.setSize(22, 22);
     this.player.body.setOffset(64, 96);
     this.physics.add.collider(this.player, this.walls);
+    this.cameras.main.startFollow(this.player);
+    this.cameras.main.setRoundPixels(true);
 
     this.player.anims.play("player_idle", true);
     this.controls = createControls(this);
   
-    // Configuracoes de luz no player e do ambiente
-    // Ativar e desativar descomentando.
-    // floor.setPipeline("Light2D");
-    // grass.setPipeline("Light2D");
-    // this.walls.setPipeline("Light2D");
-    // this.lights.enable();
-    // this.lights.setAmbientColor(0x000000);
-    // this.player.setPipeline("Light2D");
-    // this.playerLight = this.lights.addLight(
-    //   this.player.x,
-    //   this.player.y - 20,
-    //   100,
-    //   0x5cc4bc,
-    //   1.3
-    // );
+    if (enableDynamicLighting) {
+      this.lights.enable();
+      this.lights.setAmbientColor(0x000000);
+      floor.setPipeline("Light2D");
+      grass.setPipeline("Light2D");
+      this.walls.setPipeline("Light2D");
+      this.player.setPipeline("Light2D");
+      this.playerLight = this.lights.addLight(
+        this.player.x,
+        this.player.y - 20,
+        90,
+        0x5cc4bc,
+        1.7
+      );
+    }
   }
   
   update() {
     configControls(this.player, this.controls, this);
     
-    // atualizar luz do player (acompanhar ele)
-    //this.playerLight.setPosition(this.player.x, this.player.y - 20);
+    if (this.playerLight) {
+      this.playerLight.setPosition(this.player.x, this.player.y - 20);
+    }
   }
 
   
@@ -89,6 +93,10 @@ const config = {
   backgroundColor: "#125555",
   width: 800,
   height: 640,
+  fps: {
+    target: 60,
+    forceSetTimeOut: true,
+  },
   scene: Demo,
   physics: {
     default: "arcade",

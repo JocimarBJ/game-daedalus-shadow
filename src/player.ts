@@ -47,8 +47,7 @@ export const createAnimations = (scene: Phaser.Scene, player: Player): void => {
 
   player.on(
     "animationcomplete",
-    function (animation, frame) {
-      
+    (animation: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame) => {
     },
     scene
   );
