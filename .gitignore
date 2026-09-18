@@ -14,3 +14,4 @@ node_modules/
 
 # Map Generator
 game.js
+dist/game.js.map
