@@ -17,6 +17,7 @@ export default class Demo extends Phaser.Scene {
   exitLight;
   exitPortal;
   exitPortalStatic;
+  exitZone;
 
   constructor() {
     super("demo");
@@ -33,13 +34,9 @@ export default class Demo extends Phaser.Scene {
   create() {
     const mapWidth = 25;
     const mapHeight = 21;
-    const generatedMap = new MapGenerator(Date.now()).generate(
-      mapWidth,
-      mapHeight
-    );
-    const floorData = Array.from({ length: mapHeight }, () =>
-      Array(mapWidth).fill(0)
-    );
+    const generatedMap = new MapGenerator(Date.now()).generate(mapWidth, mapHeight);
+    const floorData = Array.from({ length: mapHeight }, () => Array(mapWidth).fill(0));
+    
     // IDs do atlas grass.png por conexao com outras celulas de grama.
     // Os bits representam vizinhos: 1 cima, 2 direita, 4 baixo e 8 esquerda.
     const grassTileByMask = [
@@ -65,7 +62,6 @@ export default class Demo extends Phaser.Scene {
         if (cell === 0) {
           return -1;
         }
-
         let mask = 0;
         if (y > 0 && generatedMap[y - 1][x] !== 0) {
           mask |= 1;
@@ -83,7 +79,6 @@ export default class Demo extends Phaser.Scene {
         return grassTileByMask[mask];
       })
     );
-
     const wallTileByMask = [
       0, //: aresta reta cima/baixo no meio
       1, //: aresta reta cima/baixo colado na esquerda
@@ -120,7 +115,6 @@ export default class Demo extends Phaser.Scene {
         if (cell !== 0) {
           return -1;
         }
-
         const hasWallAbove = y > 0 && generatedMap[y - 1][x] === 0;
         const hasWallRight = x < mapWidth - 1 && generatedMap[y][x + 1] === 0;
         const hasWallBelow =
@@ -252,10 +246,16 @@ export default class Demo extends Phaser.Scene {
     const exitPixelX = exitX * 32 + 16;
     const exitPixelY = exitY * 32 + 16;
     this.exitPortal = this.add.graphics();
-    this.exitPortalStatic = this.add.graphics();
+    this.exitPortalStatic = this.add.rectangle(
+      exitPixelX,
+      exitPixelY + 38,
+      32,
+      76,
+      0xffffd6,
+      0.7
+    );
     this.exitPortal.setPosition(exitPixelX, exitPixelY);
     this.exitPortal.setBlendMode(Phaser.BlendModes.ADD);
-    this.exitPortalStatic.setPosition(exitPixelX, exitPixelY);
     this.exitPortalStatic.setBlendMode(Phaser.BlendModes.ADD);
 
     // Camadas translúcidas criam um portal visível, além da luz dinâmica.
@@ -266,8 +266,9 @@ export default class Demo extends Phaser.Scene {
     this.exitPortal.fillStyle(0xffe98a, 0.4);
     this.exitPortal.fillEllipse(0, -10, 40, 40);
     this.exitPortal.postFX.addBlur(2, 2, 5);
-    this.exitPortalStatic.fillStyle(0xffffd6, 0.7);
-    this.exitPortalStatic.fillRect(-16, 0, 32, 76);
+    this.physics.add.existing(this.exitPortalStatic, true);
+    this.exitZone = this.add.zone(exitPixelX, exitPixelY, 32, 32);
+    this.physics.add.existing(this.exitZone, true);
 
     this.tweens.add({
       targets: this.exitPortal,
@@ -307,6 +308,9 @@ export default class Demo extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, wallMap.widthInPixels, wallMap.heightInPixels);
     this.cameras.main.setBounds(0, 0, wallMap.widthInPixels, wallMap.heightInPixels);
     this.player = createPlayer(this);
+    this.player.setDepth(10);
+    this.exitPortal.setDepth(20);
+    this.exitPortalStatic.setDepth(21);
 
     // configuracoes de hitbox do player
     this.player.body.setSize(22, 22);
@@ -314,6 +318,11 @@ export default class Demo extends Phaser.Scene {
     if(!godMode){
       this.physics.add.collider(this.player, this.walls);
     }
+    this.physics.add.collider(this.player, this.exitPortalStatic);
+    this.physics.add.overlap(this.player, this.exitZone, () => {
+      console.log("Player reached the exit portal!");
+      // Aqui você pode adicionar a lógica para avançar para o próximo nível ou encerrar o jogo.
+    });
     this.physics.add.collider(this.player, this.gate);
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setRoundPixels(true);
