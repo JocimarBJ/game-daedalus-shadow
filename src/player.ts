@@ -10,9 +10,9 @@ export const createPlayer = (scene: Phaser.Scene) => {
 
 export const loadSprites = (scene: Phaser.Scene): void => {
   scene.load.spritesheet("player_idle", "./assets/player/idle.png", {
-    frameWidth: 40,
+    frameWidth: 150,
     frameHeight: 150,
-    spacing: 110,
+    spacing: 0,
   });
 
   scene.load.spritesheet("player_walk", "./assets/player/walk.png", {

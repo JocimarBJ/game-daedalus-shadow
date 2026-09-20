@@ -8,9 +8,11 @@ Thumbs.db
 
 # Vendors
 node_modules/
+.env
 
 # Build
 /npm-debug.log
 
 # Map Generator
 game.js
+dist/game.js.map
