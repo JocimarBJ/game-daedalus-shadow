@@ -3,6 +3,11 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import serve from 'rollup-plugin-serve';
 import typescript from '@rollup/plugin-typescript';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const godMode = process.env.GOD_MODE?.toLowerCase() === 'true';
 
 export default {
 
@@ -33,7 +38,8 @@ export default {
             'typeof EXPERIMENTAL': JSON.stringify(true),
             'typeof PLUGIN_CAMERA3D': JSON.stringify(false),
             'typeof PLUGIN_FBINSTANT': JSON.stringify(false),
-            'typeof FEATURE_SOUND': JSON.stringify(true)
+            'typeof FEATURE_SOUND': JSON.stringify(true),
+            '__GOD_MODE__': JSON.stringify(godMode)
         }),
 
         //  Parse our .ts source files
