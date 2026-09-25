@@ -162,7 +162,10 @@ const config = {
   type: Phaser.AUTO,
   backgroundColor: "#125555",
   width: 800,
-  height: 640,
+  height: 672,
+  scale: {
+    mode: Phaser.Scale.FIT,
+  },
   fps: {
     target: 60,
     forceSetTimeOut: true,
