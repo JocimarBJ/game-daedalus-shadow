@@ -30,6 +30,7 @@ export const createControls = (
     d: wasdKeys.D,
   };
 };
+
 export const configControls = (
   player: Player,
   controls: GameControls,
@@ -37,7 +38,6 @@ export const configControls = (
 ): void => {
   player.setVelocity(0);
 
-  // Movimento horizontal
   if (controls.right.isDown || controls.d.isDown) {
     player.setFlipX(false);
     player.setVelocityX(defaultVelocity);
@@ -48,7 +48,6 @@ export const configControls = (
     player.setVelocityX(-defaultVelocity);
   }
 
-  // Movimento vertical
   if (controls.up.isDown || controls.w.isDown) {
     player.setVelocityY(-defaultVelocity);
   }
@@ -57,7 +56,6 @@ export const configControls = (
     player.setVelocityY(defaultVelocity);
   }
 
-  // Animação de movimento
   if (
     controls.right.isDown ||
     controls.left.isDown ||
@@ -72,7 +70,6 @@ export const configControls = (
     return;
   }
 
-  // Idle
   player.anims.play("player_idle", true);
 };
 
