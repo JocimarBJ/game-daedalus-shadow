@@ -10,6 +10,7 @@ import { MainMenuScene } from "./scenes/main-menu-scene";
 import { StageSelectScene } from "./scenes/stage-select-scene";
 import { PauseScene } from "./scenes/pause-scene";
 import { VictoryScene } from "./scenes/victory-scene";
+import { authService } from "./services/auth-service";
 
 const enableDynamicLighting = true;
 const godMode = String("__GOD_MODE__") === "true";
@@ -193,6 +194,10 @@ const sceneMap: Record<string, any> = {
 };
 
 const urlParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("scene") : null;
+
+if (typeof window !== "undefined" && urlParam === "login") {
+  authService.logout();
+}
 
 if (typeof window !== "undefined" && urlParam && urlParam !== "login" && urlParam !== "register") {
   if (!localStorage.getItem("daedalus_session")) {
