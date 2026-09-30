@@ -94,6 +94,77 @@ class AuthService {
     };
   }
 
+  public async checkGoogleAccount(): Promise<{ isNewUser: boolean; defaultUsername: string; email: string }> {
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    const googleEmail = "explorador@gmail.com";
+    const existing = this.users.find(
+      (user) => user.email.toLowerCase() === googleEmail.toLowerCase()
+    );
+    if (existing) {
+      return { isNewUser: false, defaultUsername: existing.username, email: googleEmail };
+    }
+    return { isNewUser: true, defaultUsername: "Explorador", email: googleEmail };
+  }
+
+  public async loginWithGoogle(customUsername?: string): Promise<AuthResponse> {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const googleEmail = "explorador@gmail.com";
+    const existing = this.users.find(
+      (user) => user.email.toLowerCase() === googleEmail.toLowerCase()
+    );
+
+    if (existing) {
+      const { passwordHash, verificationCode, ...safeUser } = existing;
+      this.currentUser = safeUser;
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(safeUser));
+      return {
+        success: true,
+        user: safeUser,
+      };
+    }
+
+    const trimmedUsername = (customUsername || "").trim();
+    if (!trimmedUsername) {
+      return { success: false, error: "Nome de usuário é obrigatório." };
+    }
+
+    if (trimmedUsername.length < 3) {
+      return { success: false, error: "O nome de usuário deve ter no mínimo 3 caracteres." };
+    }
+
+    if (trimmedUsername.length > 20) {
+      return { success: false, error: "O nome de usuário deve ter no máximo 20 caracteres." };
+    }
+
+    const usernameExists = this.users.some(
+      (user) => user.username.toLowerCase() === trimmedUsername.toLowerCase()
+    );
+    if (usernameExists) {
+      return { success: false, error: "Este nome de usuário já está em uso." };
+    }
+
+    const newUser: StoredUser = {
+      id: "google-" + Date.now(),
+      username: trimmedUsername,
+      email: googleEmail,
+      passwordHash: "google-oauth",
+      createdAt: new Date().toISOString(),
+      isVerified: true,
+    };
+
+    this.users.push(newUser);
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(this.users));
+
+    const { passwordHash, verificationCode, ...safeUser } = newUser;
+    this.currentUser = safeUser;
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(safeUser));
+
+    return {
+      success: true,
+      user: safeUser,
+    };
+  }
+
   public async register(
     username: string,
     email: string,
