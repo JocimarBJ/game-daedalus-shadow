@@ -7,6 +7,7 @@ import { LoginScene } from "./scenes/login-scene";
 import { RegisterScene } from "./scenes/register-scene";
 import { EmailVerificationScene } from "./scenes/email-verification-scene";
 import { MainMenuScene } from "./scenes/main-menu-scene";
+import { StageSelectScene } from "./scenes/stage-select-scene";
 
 // Habilitar/Desabilitar Dynamic Light
 const enableDynamicLighting = true; 
@@ -184,6 +185,7 @@ const config: Phaser.Types.Core.GameConfig = {
     RegisterScene,
     EmailVerificationScene,
     MainMenuScene,
+    StageSelectScene,
     Demo,
   ],
   physics: {
