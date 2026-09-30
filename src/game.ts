@@ -3,6 +3,7 @@ import { createPlayer, loadSprites } from "./player";
 import { createControls, configControls } from "./controls";
 import { MapGenerator } from "./map-generator";
 import { createMapLayers } from "./map-renderer";
+import { LoginScene } from "./scenes/login-scene";
 import { RegisterScene } from "./scenes/register-scene";
 
 // Habilitar/Desabilitar Dynamic Light
@@ -176,7 +177,7 @@ const config: Phaser.Types.Core.GameConfig = {
     target: 60,
     forceSetTimeOut: true,
   },
-  scene: [RegisterScene, Demo],
+  scene: [LoginScene, RegisterScene, Demo],
   physics: {
     default: "arcade",
     arcade: {
