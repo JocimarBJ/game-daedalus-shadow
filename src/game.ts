@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 import { createPlayer, loadSprites } from "./player";
-import { createControls, configControls } from "./controls";
+import { createControls, configControls, GameControls } from "./controls";
 import { MapGenerator } from "./map-generator";
 import { createMapLayers } from "./map-renderer";
 import { LoginScene } from "./scenes/login-scene";
@@ -9,26 +9,32 @@ import { EmailVerificationScene } from "./scenes/email-verification-scene";
 import { MainMenuScene } from "./scenes/main-menu-scene";
 import { StageSelectScene } from "./scenes/stage-select-scene";
 import { PauseScene } from "./scenes/pause-scene";
+import { VictoryScene } from "./scenes/victory-scene";
 
-// Habilitar/Desabilitar Dynamic Light
-const enableDynamicLighting = true; 
-const godMode = String("__GOD_MODE__") === "true"; // Habilitar/Desabilitar God Mode (invencibilidade)
+const enableDynamicLighting = true;
+const godMode = String("__GOD_MODE__") === "true";
 const PulseLightDurationPortal = 1000;
 
 export default class Demo extends Phaser.Scene {
-  player;
-  walls;
-  gate;
-  controls;
-  playerLight;
-  exitLight;
-  exitPortal;
-  exitPortalStatic;
-  exitZone;
+  player: any;
+  walls: any;
+  gate: any;
+  controls: any;
+  playerLight: any;
+  exitLight: any;
+  exitPortal: any;
+  exitPortalStatic: any;
+  exitZone: any;
   escKey?: Phaser.Input.Keyboard.Key;
+  startTime: number = 0;
+  stageId: number = 1;
 
   constructor() {
     super("demo");
+  }
+
+  init(data: { stageId?: number }) {
+    this.stageId = data?.stageId || 1;
   }
 
   preload() {
@@ -40,12 +46,13 @@ export default class Demo extends Phaser.Scene {
   }
 
   create() {
+    this.startTime = Date.now();
     this.escKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.ESC
     );
 
-    const mapWidth = 25;
-    const mapHeight = 21;
+    const mapWidth = 43;
+    const mapHeight = 29;
     const generatedMap = new MapGenerator(Date.now()).generate(mapWidth, mapHeight);
     const { floor, grass, walls, widthInPixels, heightInPixels } =
       createMapLayers(this, generatedMap);
@@ -68,9 +75,8 @@ export default class Demo extends Phaser.Scene {
     this.exitPortal.setBlendMode(Phaser.BlendModes.ADD);
     this.exitPortalStatic.setBlendMode(Phaser.BlendModes.ADD);
 
-    // Camadas translúcidas criam um portal visível, além da luz dinâmica.
     this.exitPortal.fillStyle(0xffb300, 0.1);
-    this.exitPortal.fillEllipse(0, -40, 70, 70); //x,y,largura,altura
+    this.exitPortal.fillEllipse(0, -40, 70, 70);
     this.exitPortal.fillStyle(0xffc928, 0.2);
     this.exitPortal.fillEllipse(0, -25, 55, 55);
     this.exitPortal.fillStyle(0xffe98a, 0.4);
@@ -93,7 +99,7 @@ export default class Demo extends Phaser.Scene {
 
     this.exitLight = this.lights.addLight(
       exitPixelX,
-      exitPixelY-20,
+      exitPixelY - 20,
       60,
       0xffd27a,
       2.2
@@ -117,21 +123,23 @@ export default class Demo extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, widthInPixels, heightInPixels);
     this.cameras.main.setBounds(0, 0, widthInPixels, heightInPixels);
-    this.player = createPlayer(this);
+    this.player = createPlayer(this, entranceX * 32 + 16, 64);
     this.player.setDepth(10);
     this.exitPortal.setDepth(20);
     this.exitPortalStatic.setDepth(21);
 
-    // configuracoes de hitbox do player
     this.player.body.setSize(22, 22);
     this.player.body.setOffset(64, 96);
-    if(!godMode){
+    if (!godMode) {
       this.physics.add.collider(this.player, this.walls);
     }
     this.physics.add.collider(this.player, this.exitPortalStatic);
     this.physics.add.overlap(this.player, this.exitZone, () => {
-      console.log("Player reached the exit portal!");
-      // Aqui você pode adicionar a lógica para avançar para o próximo nível ou encerrar o jogo.
+      const elapsedSecs = Math.floor((Date.now() - this.startTime) / 1000);
+      this.scene.start("VictoryScene", {
+        timeElapsed: elapsedSecs,
+        stageId: this.stageId,
+      });
     });
     this.physics.add.collider(this.player, this.gate);
     this.cameras.main.startFollow(this.player);
@@ -139,7 +147,7 @@ export default class Demo extends Phaser.Scene {
 
     this.player.anims.play("player_idle", true);
     this.controls = createControls(this);
-  
+
     if (enableDynamicLighting) {
       this.lights.enable();
       this.lights.setAmbientColor(0x000000);
@@ -157,7 +165,7 @@ export default class Demo extends Phaser.Scene {
       );
     }
   }
-  
+
   update() {
     if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
       this.scene.launch("PauseScene");
@@ -165,15 +173,59 @@ export default class Demo extends Phaser.Scene {
       return;
     }
 
-    configControls(this.player, this.controls, this);
-    
+    configControls(this.player, this.controls as GameControls, this);
+
     if (this.playerLight) {
       this.playerLight.setPosition(this.player.x, this.player.y - 20);
     }
   }
-
-  
 }
+
+const sceneMap: Record<string, any> = {
+  login: LoginScene,
+  register: RegisterScene,
+  email: EmailVerificationScene,
+  menu: MainMenuScene,
+  stages: StageSelectScene,
+  demo: Demo,
+  pause: PauseScene,
+  victory: VictoryScene,
+};
+
+const urlParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("scene") : null;
+
+if (typeof window !== "undefined" && urlParam && urlParam !== "login" && urlParam !== "register") {
+  if (!localStorage.getItem("daedalus_session")) {
+    localStorage.setItem(
+      "daedalus_session",
+      JSON.stringify({
+        id: "user-1",
+        username: "Teseu",
+        email: "teseu@labirinto.com",
+        createdAt: "2026-09-27T00:00:00.000Z",
+        isVerified: true,
+      })
+    );
+  }
+}
+
+const selectedInitialScene = urlParam && sceneMap[urlParam] ? sceneMap[urlParam] : LoginScene;
+
+const allScenes = [
+  LoginScene,
+  RegisterScene,
+  EmailVerificationScene,
+  MainMenuScene,
+  StageSelectScene,
+  Demo,
+  PauseScene,
+  VictoryScene,
+];
+
+const scenes = [
+  selectedInitialScene,
+  ...allScenes.filter((s) => s !== selectedInitialScene),
+];
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -192,15 +244,7 @@ const config: Phaser.Types.Core.GameConfig = {
     target: 60,
     forceSetTimeOut: true,
   },
-  scene: [
-    LoginScene,
-    RegisterScene,
-    EmailVerificationScene,
-    MainMenuScene,
-    StageSelectScene,
-    Demo,
-    PauseScene,
-  ],
+  scene: scenes,
   physics: {
     default: "arcade",
     arcade: {

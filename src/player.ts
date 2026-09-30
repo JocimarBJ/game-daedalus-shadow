@@ -1,8 +1,8 @@
 export interface Player extends Phaser.Physics.Arcade.Sprite {
 }
 
-export const createPlayer = (scene: Phaser.Scene) => {
-  const player = scene.physics.add.sprite(400, 32, "player_idle");
+export const createPlayer = (scene: Phaser.Scene, x = 400, y = 32) => {
+  const player = scene.physics.add.sprite(x, y, "player_idle");
   createAnimations(scene, player);
   return player;
 };
@@ -18,7 +18,7 @@ export const loadSprites = (scene: Phaser.Scene): void => {
     frameWidth: 150,
     frameHeight: 150,
     spacing: 0,
-  });  
+  });
 };
 
 export const createAnimations = (scene: Phaser.Scene, player: Player): void => {
@@ -43,11 +43,9 @@ export const createAnimations = (scene: Phaser.Scene, player: Player): void => {
     repeat: -1,
   });
 
-
   player.on(
     "animationcomplete",
-    (animation: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame) => {
-    },
+    (animation: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame) => {},
     scene
   );
 };
