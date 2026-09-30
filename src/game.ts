@@ -6,6 +6,7 @@ import { createMapLayers } from "./map-renderer";
 import { LoginScene } from "./scenes/login-scene";
 import { RegisterScene } from "./scenes/register-scene";
 import { EmailVerificationScene } from "./scenes/email-verification-scene";
+import { MainMenuScene } from "./scenes/main-menu-scene";
 
 // Habilitar/Desabilitar Dynamic Light
 const enableDynamicLighting = true; 
@@ -178,7 +179,13 @@ const config: Phaser.Types.Core.GameConfig = {
     target: 60,
     forceSetTimeOut: true,
   },
-  scene: [LoginScene, RegisterScene, EmailVerificationScene, Demo],
+  scene: [
+    LoginScene,
+    RegisterScene,
+    EmailVerificationScene,
+    MainMenuScene,
+    Demo,
+  ],
   physics: {
     default: "arcade",
     arcade: {
