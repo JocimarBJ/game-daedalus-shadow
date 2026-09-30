@@ -8,6 +8,7 @@ import { RegisterScene } from "./scenes/register-scene";
 import { EmailVerificationScene } from "./scenes/email-verification-scene";
 import { MainMenuScene } from "./scenes/main-menu-scene";
 import { StageSelectScene } from "./scenes/stage-select-scene";
+import { PauseScene } from "./scenes/pause-scene";
 
 // Habilitar/Desabilitar Dynamic Light
 const enableDynamicLighting = true; 
@@ -24,6 +25,7 @@ export default class Demo extends Phaser.Scene {
   exitPortal;
   exitPortalStatic;
   exitZone;
+  escKey?: Phaser.Input.Keyboard.Key;
 
   constructor() {
     super("demo");
@@ -38,6 +40,10 @@ export default class Demo extends Phaser.Scene {
   }
 
   create() {
+    this.escKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ESC
+    );
+
     const mapWidth = 25;
     const mapHeight = 21;
     const generatedMap = new MapGenerator(Date.now()).generate(mapWidth, mapHeight);
@@ -153,6 +159,12 @@ export default class Demo extends Phaser.Scene {
   }
   
   update() {
+    if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
+      this.scene.launch("PauseScene");
+      this.scene.pause();
+      return;
+    }
+
     configControls(this.player, this.controls, this);
     
     if (this.playerLight) {
@@ -187,6 +199,7 @@ const config: Phaser.Types.Core.GameConfig = {
     MainMenuScene,
     StageSelectScene,
     Demo,
+    PauseScene,
   ],
   physics: {
     default: "arcade",
