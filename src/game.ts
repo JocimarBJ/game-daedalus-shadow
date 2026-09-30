@@ -3,6 +3,7 @@ import { createPlayer, loadSprites } from "./player";
 import { createControls, configControls } from "./controls";
 import { MapGenerator } from "./map-generator";
 import { createMapLayers } from "./map-renderer";
+import { RegisterScene } from "./scenes/register-scene";
 
 // Habilitar/Desabilitar Dynamic Light
 const enableDynamicLighting = true; 
@@ -158,16 +159,24 @@ export default class Demo extends Phaser.Scene {
   
 }
 
-const config = {
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  backgroundColor: "#125555",
-  width: 800,
-  height: 640,
+  parent: "game-container",
+  backgroundColor: "#07090d",
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 1280,
+    height: 720,
+  },
+  dom: {
+    createContainer: true,
+  },
   fps: {
     target: 60,
     forceSetTimeOut: true,
   },
-  scene: Demo,
+  scene: [RegisterScene, Demo],
   physics: {
     default: "arcade",
     arcade: {
@@ -176,4 +185,4 @@ const config = {
   },
 };
 
-const game = new Phaser.Game(config);
+new Phaser.Game(config);

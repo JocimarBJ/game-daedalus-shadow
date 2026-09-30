@@ -1,34 +1,59 @@
 import { Player } from "./player";
 
+export interface GameControls {
+  left: Phaser.Input.Keyboard.Key;
+  right: Phaser.Input.Keyboard.Key;
+  up: Phaser.Input.Keyboard.Key;
+  down: Phaser.Input.Keyboard.Key;
+  a: Phaser.Input.Keyboard.Key;
+  d: Phaser.Input.Keyboard.Key;
+  w: Phaser.Input.Keyboard.Key;
+  s: Phaser.Input.Keyboard.Key;
+}
+
 export const createControls = (
   scene: Phaser.Scene
-): Phaser.Types.Input.Keyboard.CursorKeys => {
-  return scene.input.keyboard.createCursorKeys();
+): GameControls => {
+  const cursorKeys = scene.input.keyboard.createCursorKeys();
+  const wasdKeys = scene.input.keyboard.addKeys("W,A,S,D") as {
+    W: Phaser.Input.Keyboard.Key;
+    A: Phaser.Input.Keyboard.Key;
+    S: Phaser.Input.Keyboard.Key;
+    D: Phaser.Input.Keyboard.Key;
+  };
+
+  return {
+    ...cursorKeys,
+    w: wasdKeys.W,
+    a: wasdKeys.A,
+    s: wasdKeys.S,
+    d: wasdKeys.D,
+  };
 };
 export const configControls = (
   player: Player,
-  controls: Phaser.Types.Input.Keyboard.CursorKeys,
+  controls: GameControls,
   scene: Phaser.Scene
 ): void => {
   player.setVelocity(0);
 
   // Movimento horizontal
-  if (controls.right.isDown) {
+  if (controls.right.isDown || controls.d.isDown) {
     player.setFlipX(false);
     player.setVelocityX(defaultVelocity);
   }
 
-  if (controls.left.isDown) {
+  if (controls.left.isDown || controls.a.isDown) {
     player.setFlipX(true);
     player.setVelocityX(-defaultVelocity);
   }
 
   // Movimento vertical
-  if (controls.up.isDown) {
+  if (controls.up.isDown || controls.w.isDown) {
     player.setVelocityY(-defaultVelocity);
   }
 
-  if (controls.down.isDown) {
+  if (controls.down.isDown || controls.s.isDown) {
     player.setVelocityY(defaultVelocity);
   }
 
@@ -37,31 +62,18 @@ export const configControls = (
     controls.right.isDown ||
     controls.left.isDown ||
     controls.up.isDown ||
-    controls.down.isDown
+    controls.down.isDown ||
+    controls.w.isDown ||
+    controls.a.isDown ||
+    controls.s.isDown ||
+    controls.d.isDown
   ) {
-    if (!player.isAttacking) {
-      player.anims.play("player_walk", true);
-    }
-    return;
-  }
-
-  // Ataque
-  if (controls.space.isDown) {
-    if (!player.isAttacking) {
-      attack(player);
-    }
+    player.anims.play("player_walk", true);
     return;
   }
 
   // Idle
-  if (!player.isAttacking) {
-    player.anims.play("player_idle", true);
-  }
+  player.anims.play("player_idle", true);
 };
 
 const defaultVelocity = 100;
-
-const attack = (player: Player): void => {
-  player.isAttacking = true;
-  player.anims.play("player_attack", true);
-};
