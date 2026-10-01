@@ -331,7 +331,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     if (continueBtn) {
       continueBtn.addEventListener("click", () => {
-        this.scene.start("demo");
+        this.scene.start("demo", { resume: true });
       });
     }
 
@@ -366,13 +366,35 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     if (fullscreenBtn) {
-      fullscreenBtn.addEventListener("click", () => {
+      const updateFullscreenButton = () => {
+        const isFullscreen = this.scale.isFullscreen || Boolean(document.fullscreenElement);
+        fullscreenBtn.textContent = isFullscreen
+          ? "Sair da Tela Cheia"
+          : "Entrar em Tela Cheia";
+        fullscreenBtn.setAttribute("aria-pressed", String(isFullscreen));
+      };
+
+      const toggleFullscreen = () => {
         if (this.scale.isFullscreen) {
           this.scale.stopFullscreen();
         } else {
           this.scale.startFullscreen();
         }
+        updateFullscreenButton();
+      };
+
+      fullscreenBtn.addEventListener("click", toggleFullscreen);
+      document.addEventListener("fullscreenchange", updateFullscreenButton);
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "F11") {
+          event.preventDefault();
+          toggleFullscreen();
+        }
       });
+      this.events.once("shutdown", () => {
+        document.removeEventListener("fullscreenchange", updateFullscreenButton);
+      });
+      updateFullscreenButton();
     }
 
     const tabs = this.domElement.node.querySelectorAll(".settings-tab");
