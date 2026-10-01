@@ -62,7 +62,7 @@ O jogo conta com diferentes fases e níveis de dificuldade, além de um sistema 
 | -------------- | ----------------------------------- |
 | **React**      | Construção da interface             |
 | **TypeScript** | Tipagem e desenvolvimento           |
-| **Vite**       | Build e ambiente de desenvolvimento |
+| **Rollup**     | Build e ambiente de desenvolvimento |
 | **HTML5**      | Estrutura da aplicação              |
 | **CSS3**       | Estilização                         |
 | **Phaser**     | Motor do jogo 2D                    |
@@ -93,7 +93,7 @@ O sistema é organizado em três camadas principais:
 ┌───────────────────────────┐
 │        Front-end          │
 │    React + TypeScript     │
-│      Vite + Phaser        │
+│      Rollup + Phaser      │
 └─────────────┬─────────────┘
               │
               │ HTTP / REST
@@ -122,16 +122,28 @@ A estrutura pode ser organizada da seguinte maneira:
 Daedalus-Shadow/
 │
 ├── frontend/
+|   ├── dist/
+│   │   ├── assets/
+│   │   |   ├── map/
+│   │   |   └── player/
+|   |   ├── style/
+│   │   |   └── game.css
+│   │   └── index.html
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── game/
-│   │   │   └── game.ts
+│   │   ├── scenes/
 │   │   ├── services/
-│   │   └── ...
-│   ├── public/
+│   │   ├── controls.ts
+│   │   ├── game.ts
+│   │   ├── map-generator.ts
+│   │   ├── map-render.ts
+│   │   └── player.ts
+│   ├── LICENCE
+│   ├── package-lock.json
 │   ├── package.json
-│   └── vite.config.ts
+│   ├── .env.exemple
+│   ├── rollup.config.dev.mjs
+│   ├── rollup.config.dist.mjs
+│   └── tsconfig.json
 │
 ├── backend/
 │   ├── src/
@@ -189,7 +201,7 @@ Execute o servidor de desenvolvimento:
 npm run dev
 ```
 
-A aplicação estará disponível no endereço apresentado pelo Vite, normalmente:
+A aplicação estará disponível no endereço apresentado pelo Rollup, normalmente:
 
 ```text
 http://localhost:9090
