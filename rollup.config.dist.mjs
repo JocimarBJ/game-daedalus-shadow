@@ -8,6 +8,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const godMode = process.env.GOD_MODE?.toLowerCase() === 'true';
+const dynamicLighting = process.env.DYNAMIC_LIGHTING?.toLowerCase() === 'true';
+const apiBaseUrl = (process.env.API_BASE_URL || 'http://localhost:3001/api')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"');
 
 export default {
 
@@ -39,7 +43,9 @@ export default {
             'typeof PLUGIN_CAMERA3D': JSON.stringify(false),
             'typeof PLUGIN_FBINSTANT': JSON.stringify(false),
             'typeof FEATURE_SOUND': JSON.stringify(true),
-            '__GOD_MODE__': JSON.stringify(godMode)
+            '__GOD_MODE__': JSON.stringify(godMode),
+            '__DYNAMIC_LIGHTING__': JSON.stringify(dynamicLighting),
+            '__API_BASE_URL__': apiBaseUrl
         }),
 
         //  Parse our .ts source files

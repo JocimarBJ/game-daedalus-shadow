@@ -62,7 +62,7 @@ O jogo conta com diferentes fases e níveis de dificuldade, além de um sistema 
 | -------------- | ----------------------------------- |
 | **React**      | Construção da interface             |
 | **TypeScript** | Tipagem e desenvolvimento           |
-| **Rollup**     | Build e ambiente de desenvolvimento |
+| **Vite**       | Build e ambiente de desenvolvimento |
 | **HTML5**      | Estrutura da aplicação              |
 | **CSS3**       | Estilização                         |
 | **Phaser**     | Motor do jogo 2D                    |
@@ -93,7 +93,7 @@ O sistema é organizado em três camadas principais:
 ┌───────────────────────────┐
 │        Front-end          │
 │    React + TypeScript     │
-│      Rollup + Phaser      │
+│      Vite + Phaser        │
 └─────────────┬─────────────┘
               │
               │ HTTP / REST
@@ -122,28 +122,16 @@ A estrutura pode ser organizada da seguinte maneira:
 Daedalus-Shadow/
 │
 ├── frontend/
-|   ├── dist/
-│   │   ├── assets/
-│   │   |   ├── map/
-│   │   |   └── player/
-|   |   ├── style/
-│   │   |   └── game.css
-│   │   └── index.html
 │   ├── src/
-│   │   ├── scenes/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── game/
+│   │   │   └── game.ts
 │   │   ├── services/
-│   │   ├── controls.ts
-│   │   ├── game.ts
-│   │   ├── map-generator.ts
-│   │   ├── map-render.ts
-│   │   └── player.ts
-│   ├── LICENCE
-│   ├── package-lock.json
+│   │   └── ...
+│   ├── public/
 │   ├── package.json
-│   ├── .env.exemple
-│   ├── rollup.config.dev.mjs
-│   ├── rollup.config.dist.mjs
-│   └── tsconfig.json
+│   └── vite.config.ts
 │
 ├── backend/
 │   ├── src/
@@ -201,11 +189,21 @@ Execute o servidor de desenvolvimento:
 npm run dev
 ```
 
-A aplicação estará disponível no endereço apresentado pelo Rollup, normalmente:
+A aplicação estará disponível no endereço apresentado pelo Vite, normalmente:
 
 ```text
 http://localhost:9090
 ```
+
+### 2.1 Execute o pseudo-backend local
+
+Para testar o progresso persistido, abra outro terminal na raiz do projeto e execute:
+
+```bash
+npm run api
+```
+
+O servidor SQLite ficará disponível em `http://localhost:3001`. A base local será criada em `server/progress.sqlite` e não deve ser versionada. Com a API em execução, o botão de continuar recupera o nível e a seed do usuário da sessão; ao concluir uma fase, o servidor cria e salva a seed da próxima fase.
 
 ### 3. Execute o Back-end
 
