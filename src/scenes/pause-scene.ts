@@ -12,6 +12,7 @@ const SETTINGS_STORAGE_KEY = "daedalus_settings";
 export class PauseScene extends Phaser.Scene {
   private domElement?: Phaser.GameObjects.DOMElement;
   private escKey?: Phaser.Input.Keyboard.Key;
+  private pauseKey?: Phaser.Input.Keyboard.Key;
 
   private settings: GameSettings = {
     masterVolume: 80,
@@ -30,12 +31,18 @@ export class PauseScene extends Phaser.Scene {
     this.escKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.ESC
     );
+    this.pauseKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.P
+    );
 
     this.createPauseUI();
   }
 
   public update(): void {
-    if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
+    if (
+      (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) ||
+      (this.pauseKey && Phaser.Input.Keyboard.JustDown(this.pauseKey))
+    ) {
       this.resumeGame();
     }
   }
