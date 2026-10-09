@@ -11,13 +11,17 @@ O projeto consiste em um jogo 2D no qual o jogador controla um personagem atrav�
 ## 🌐 Acessos
 
 <p align="center">
-  <a href="README.md">🇧🇷 Português</a> |
-  <a href="README.en.md">🇺🇸 English</a> |
-  <a href="README.es.md">🇪🇸 Español</a>
+  <a href="README.md"><img src="https://flagcdn.com/br.svg" width="15" alt="Bandeira do Brasil"> Português</a> |
+  <a href="README.en.md"><img src="https://flagcdn.com/us.svg" width="17" alt="English Flag"> English</a> |
+  <a href="README.es.md"><img src="https://flagcdn.com/es.svg" width="15" alt="Español Bandera"> Español</a>
 </p>
 
-[![Documentação](https://img.shields.io/badge/Documentação-4285F4?style=for-the-badge&logo=readthedocs&logoColor=white)](https://docs.google.com/document/d/1wHTKKy-OlpOd1Lxw_D1iCJACUWW3lvY1SN9SBoPetN8/edit?usp=sharing)
-[![Kanban](https://img.shields.io/badge/Kanban-0052CC?style=for-the-badge&logo=trello&logoColor=white)](https://trello.com/b/AyHurhur)
+<div align="center">
+
+[![Documentation](https://img.shields.io/badge/Documentation-4285F4?style=for-the-badge\&logo=readthedocs\&logoColor=white)](https://docs.google.com/document/d/1wHTKKy-OlpOd1Lxw_D1iCJACUWW3lvY1SN9SBoPetN8/edit?usp=sharing)
+[![Kanban](https://img.shields.io/badge/Kanban-0052CC?style=for-the-badge\&logo=trello\&logoColor=white)](https://trello.com/b/AyHurhur)
+  
+</div>
 
 ---
 
