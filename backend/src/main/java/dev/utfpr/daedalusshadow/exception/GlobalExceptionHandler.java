@@ -1,7 +1,9 @@
 package dev.utfpr.daedalusshadow.exception;
 
+import dev.utfpr.daedalusshadow.exception.exceptiontypes.EmailAlreadyInUseException;
 import dev.utfpr.daedalusshadow.exception.exceptiontypes.ExpiredTokenException;
 import dev.utfpr.daedalusshadow.exception.exceptiontypes.InvalidTokenException;
+import dev.utfpr.daedalusshadow.exception.exceptiontypes.UserNotFoundException;
 import dev.utfpr.daedalusshadow.exception.response.StandardError;
 import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,5 +43,36 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<StandardError> handleUserNotFoundException(
+            UserNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        StandardError error = new StandardError(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "USER_NOT_FOUND",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(EmailAlreadyInUseException.class)
+    public ResponseEntity<StandardError>  handleEmailAlreadyInUseException(
+            EmailAlreadyInUseException ex,
+            HttpServletRequest request
+    ) {
+        StandardError error = new StandardError(
+                Instant.now(),
+                HttpStatus.CONFLICT.value(),
+                "EMAIL_ALREADY_IN_USE",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 }
