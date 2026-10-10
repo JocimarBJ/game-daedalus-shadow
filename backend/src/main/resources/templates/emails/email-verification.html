@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify your Bittencourt Academy account</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+    <style>
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background-color: #000926;
+            font-family: 'Inter', sans-serif;
+            color: #F8FAFC;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #0F1935;
+            border: 1px solid #263354;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 30px;
+            background-color: #3F4FFD;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #F8FAFC;
+            font-size: 26px;
+        }
+
+        .content {
+            padding: 35px;
+        }
+
+        .content p {
+            color: #F8FAFC;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .greeting {
+            margin: 0 0 20px;
+            font-size: 16px !important;
+        }
+
+        .description {
+            margin: 0 0 18px;
+        }
+
+        .secondary-text {
+            margin: 0 0 25px;
+            color: #AAB4D6 !important;
+        }
+
+        .button-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #3F4FFD;
+            color: #F8FAFC !important;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .warning {
+            margin: 0;
+            color: #AAB4D6 !important;
+            font-size: 13px !important;
+        }
+
+        .footer {
+            padding: 20px 35px;
+            background-color: #0C142C;
+            border-top: 1px solid #263354;
+        }
+
+        .footer p {
+            margin: 0;
+            color: #AAB4D6;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-container">
+
+    <div class="header">
+        <h1>Verify your account</h1>
+    </div>
+
+    <div class="content">
+        <p class="greeting">
+            Hello <strong th:text="${userName}"></strong>,
+        </p>
+
+        <p class="description">
+            Thanks for creating your Bittencourt Academy account!
+        </p>
+
+        <p class="secondary-text">
+            Please verify your email address by clicking the button below.
+            This will activate your account and allow you to access the platform.
+        </p>
+
+        <div class="button-container">
+            <a class="button" th:href="${link}">
+                Verify my account
+            </a>
+        </div>
+
+        <p class="warning">
+            If you didn't create an account with Bittencourt Academy,
+            you can safely ignore this email.
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>
+            Bittencourt Academy &copy; 2026
+        </p>
+    </div>
+
+</div>
+</body>
+</html>
