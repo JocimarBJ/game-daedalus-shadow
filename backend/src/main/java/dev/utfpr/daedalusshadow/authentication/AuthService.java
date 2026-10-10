@@ -9,7 +9,10 @@ import dev.utfpr.daedalusshadow.authentication.model.dto.LoginRequestDto;
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginResponseDto;
 import dev.utfpr.daedalusshadow.authentication.refreshtoken.RefreshTokenService;
 import dev.utfpr.daedalusshadow.email.EmailService;
+import dev.utfpr.daedalusshadow.exception.exceptiontypes.EmailAlreadyVerifiedException;
+import dev.utfpr.daedalusshadow.exception.exceptiontypes.ExpiredTokenException;
 import dev.utfpr.daedalusshadow.exception.exceptiontypes.InvalidCredentialsException;
+import dev.utfpr.daedalusshadow.exception.exceptiontypes.InvalidTokenException;
 import dev.utfpr.daedalusshadow.security.JwtService;
 import dev.utfpr.daedalusshadow.user.User;
 import dev.utfpr.daedalusshadow.user.UserService;
@@ -78,6 +81,55 @@ public class AuthService {
         emailService.sendVerificationEmail(savedUser.getEmail(), link, savedUser.getUsername());
 
         return new UserResponseDto(savedUser);
+    }
+
+
+    @Transactional
+    public void resendVerificationEmail(String email){
+        EmailVerificationToken oldTtoken = emailVerificationTokenRepository
+                .findByUserEmail(email)
+                .orElseThrow(() -> new InvalidTokenException("The token is not valid."));
+
+        if(oldTtoken.isUsed()){
+            throw new EmailAlreadyVerifiedException("The email is already verified.");
+        }
+
+        emailVerificationTokenRepository.delete(oldTtoken);
+        emailVerificationTokenRepository.flush(); //
+
+        User user = oldTtoken.getUser();
+
+        EmailVerificationToken newToken = generateToken(user);
+        emailVerificationTokenRepository.save(newToken);
+
+        String link = generateEmailVerificationLink(newToken.getToken());
+        emailService.sendVerificationEmail(user.getEmail(), link, user.getUsername());
+    }
+
+    @Transactional
+    public void verifyEmail(String token) {
+
+        // Verificar se o token é válido ou não
+        EmailVerificationToken tokenEntity = emailVerificationTokenRepository
+                .findByToken(token)
+                .orElseThrow(() -> new InvalidTokenException("The token is not valid."));
+
+        if (tokenEntity.getExpiresAt().isBefore(Instant.now())) {
+            throw new ExpiredTokenException("The token is expired");
+        }
+
+        // Verificar se o email já está verificado ou não
+        if (tokenEntity.isUsed()){
+            throw new EmailAlreadyVerifiedException("The email is already verified.");
+        }
+
+        tokenEntity.setUsed(true);
+        tokenEntity.getUser().setEnabled(true);
+        emailVerificationTokenRepository.save(tokenEntity);
+
+        User user = tokenEntity.getUser();
+
+        emailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
     }
 
     private EmailVerificationToken generateToken(User user){
