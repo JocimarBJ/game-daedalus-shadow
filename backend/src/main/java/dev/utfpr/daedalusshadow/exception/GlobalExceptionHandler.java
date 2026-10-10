@@ -1,9 +1,6 @@
 package dev.utfpr.daedalusshadow.exception;
 
-import dev.utfpr.daedalusshadow.exception.exceptiontypes.EmailAlreadyInUseException;
-import dev.utfpr.daedalusshadow.exception.exceptiontypes.ExpiredTokenException;
-import dev.utfpr.daedalusshadow.exception.exceptiontypes.InvalidTokenException;
-import dev.utfpr.daedalusshadow.exception.exceptiontypes.UserNotFoundException;
+import dev.utfpr.daedalusshadow.exception.exceptiontypes.*;
 import dev.utfpr.daedalusshadow.exception.response.StandardError;
 import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
@@ -74,5 +71,22 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<StandardError> handleInvalidCredentialsException(
+            InvalidCredentialsException ex,
+            HttpServletRequest request
+    ) {
+
+        StandardError error = new StandardError(
+                Instant.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "INVALID_CREDENTIALS",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 }
