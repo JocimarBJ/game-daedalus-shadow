@@ -27,7 +27,9 @@ public class User {
     @Column(nullable = false)
     private boolean enabled = false;
 
-
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRole role = UserRole.PLAYER;
 
     @Column(nullable = false)
     private Instant createdAt;
