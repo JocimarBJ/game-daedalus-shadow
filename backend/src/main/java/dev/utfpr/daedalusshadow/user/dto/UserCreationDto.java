@@ -13,7 +13,7 @@ public record UserCreationDto(
                 max = 120,
                 message = "name must contain between 3 and 120 characters"
         )
-        String fullName,
+        String username,
 
         @NotBlank(message = "email is required")
         @Email(message = "email must be a valid email address")
