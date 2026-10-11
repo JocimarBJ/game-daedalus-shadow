@@ -2,13 +2,23 @@ package dev.utfpr.daedalusshadow.exception;
 
 import dev.utfpr.daedalusshadow.exception.exceptiontypes.*;
 import dev.utfpr.daedalusshadow.exception.response.StandardError;
+import dev.utfpr.daedalusshadow.exception.response.ValidationError;
 import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -104,5 +114,103 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ValidationError> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request
+    ) {
+
+        Map<String, List<String>> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        FieldError::getField,
+                        Collectors.mapping(
+                                FieldError::getDefaultMessage,
+                                Collectors.toList()
+                        )
+                ));
+
+        ValidationError error = new ValidationError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "VALIDATION_ERROR",
+                "One or more fields are invalid",
+                request.getRequestURI(),
+                errors
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<StandardError> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request
+    ) {
+        StandardError error = new StandardError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "INVALID_REQUEST_BODY",
+                "Request body is invalid or malformed",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<StandardError> handleMissingServletRequestParameterException(
+            MissingServletRequestParameterException ex,
+            HttpServletRequest request
+    ) {
+
+        StandardError error = new StandardError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "MISSING_REQUEST_PARAMETER",
+                String.format(
+                        "Required parameter '%s' is missing",
+                        ex.getParameterName()
+                ),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<StandardError> handleHttpMediaTypeNotSupportedException(
+            HttpMediaTypeNotSupportedException ex,
+            HttpServletRequest request
+    ) {
+
+        StandardError error = new StandardError(
+                Instant.now(),
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
+                "MEDIA_TYPE_NOT_SUPPORTED",
+                "Content-Type is not supported. Use application/json",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(error);
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<StandardError> handleDisabledException(
+            DisabledException ex,
+            HttpServletRequest request
+    ) {
+
+        StandardError error = new StandardError(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "ACCOUNT_DISABLED",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 }
