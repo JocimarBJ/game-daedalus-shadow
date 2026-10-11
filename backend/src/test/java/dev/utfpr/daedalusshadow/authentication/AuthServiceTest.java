@@ -99,7 +99,7 @@ class AuthServiceTest {
         assertAll(
                 () -> assertNotNull(response),
                 () -> assertEquals(savedUser.getId(), response.id()),
-                () -> assertEquals(savedUser.getUsername(), response.fullName()),
+                () -> assertEquals(savedUser.getUsername(), response.username()),
                 () -> assertEquals(savedUser.getEmail(), response.email())
         );
 

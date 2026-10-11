@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public record UserResponseDto(
         UUID id,
-        String fullName,
+        String username,
         String email,
         UserRole userRole,
         boolean enabled,
