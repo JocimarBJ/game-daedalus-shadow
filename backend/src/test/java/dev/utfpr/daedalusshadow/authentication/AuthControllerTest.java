@@ -2,6 +2,7 @@ package dev.utfpr.daedalusshadow.authentication;
 
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginRequestDto;
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginResponseDto;
+import dev.utfpr.daedalusshadow.authentication.refreshtoken.RefreshTokenService;
 import dev.utfpr.daedalusshadow.exception.exceptiontypes.*;
 import dev.utfpr.daedalusshadow.security.CustomAccessDeniedHandler;
 import dev.utfpr.daedalusshadow.security.CustomAuthenticationEntryPoint;
@@ -16,6 +17,7 @@ import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -44,6 +46,9 @@ class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private RefreshTokenService refreshTokenService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -589,5 +594,86 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.timestamp").exists());
 
         verifyNoInteractions(authService);
+    }
+
+    @Test
+    @DisplayName("Should return 200 OK when refresh token is valid")
+    void shouldRefreshTokenSuccessfully() throws Exception {
+        String refreshToken = "valid-refresh-token";
+
+        LoginResponseDto response = new LoginResponseDto(
+                "new-access-token",
+                "new-refresh-token"
+        );
+
+        when(refreshTokenService.refreshAccessToken(refreshToken)).thenReturn(response);
+
+        mockMvc.perform(
+                        post("/auth/refresh")
+                                .with(csrf())
+                                .param("refreshToken", refreshToken)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("new-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("new-refresh-token"));
+
+        verify(refreshTokenService).refreshAccessToken(refreshToken);
+    }
+
+    @Test
+    @DisplayName("Should return 400 Bad Request when refresh token is missing")
+    void shouldNotRefreshWhenRefreshTokenIsMissing() throws Exception {
+        mockMvc.perform(
+                        post("/auth/refresh")
+                                .with(csrf())
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.statusCode").value(400))
+                .andExpect(jsonPath("$.error").value("MISSING_REQUEST_PARAMETER"))
+                .andExpect(jsonPath("$.message")
+                        .value("Required parameter 'refreshToken' is missing"));
+
+        verify(refreshTokenService, never()).refreshAccessToken(anyString());
+    }
+
+    @Test
+    @DisplayName("Should return 400 Bad Request when refresh token is invalid")
+    void shouldNotRefreshWhenRefreshTokenIsInvalid() throws Exception {
+        String refreshToken = "invalid-refresh-token";
+
+        when(refreshTokenService.refreshAccessToken(refreshToken))
+                .thenThrow(new InvalidTokenException("Invalid refresh token."));
+
+        mockMvc.perform(
+                        post("/auth/refresh")
+                                .with(csrf())
+                                .param("refreshToken", refreshToken)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.statusCode").value(400))
+                .andExpect(jsonPath("$.error").value("TOKEN_INVALID"))
+                .andExpect(jsonPath("$.message").value("Invalid refresh token."));
+    }
+
+    @Test
+    @DisplayName("Should return 401 Unauthorized when refresh token is expired")
+    void shouldNotRefreshWhenRefreshTokenIsExpired() throws Exception {
+        String refreshToken = "expired-refresh-token";
+
+        when(refreshTokenService.refreshAccessToken(refreshToken))
+                .thenThrow(new ExpiredTokenException(
+                        "Refresh token expired. Please login again."
+                ));
+
+        mockMvc.perform(
+                        post("/auth/refresh")
+                                .with(csrf())
+                                .param("refreshToken", refreshToken)
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.statusCode").value(401))
+                .andExpect(jsonPath("$.error").value("TOKEN_EXPIRED"))
+                .andExpect(jsonPath("$.message")
+                        .value("Refresh token expired. Please login again."));
     }
 }

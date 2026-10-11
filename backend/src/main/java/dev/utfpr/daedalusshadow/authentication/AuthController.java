@@ -2,6 +2,7 @@ package dev.utfpr.daedalusshadow.authentication;
 
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginRequestDto;
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginResponseDto;
+import dev.utfpr.daedalusshadow.authentication.refreshtoken.RefreshTokenService;
 import dev.utfpr.daedalusshadow.user.dto.UserCreationDto;
 import dev.utfpr.daedalusshadow.user.dto.UserResponseDto;
 import jakarta.validation.Valid;
@@ -17,6 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserCreationDto dto){
@@ -39,5 +41,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
         return ResponseEntity.ok(authService.localLogin(loginRequestDto));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDto> refreshToken(@RequestParam String refreshToken) {
+        LoginResponseDto response = refreshTokenService.refreshAccessToken(refreshToken);
+        return ResponseEntity.ok(response);
     }
 }

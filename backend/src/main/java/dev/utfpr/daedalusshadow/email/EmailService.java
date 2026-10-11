@@ -30,7 +30,7 @@ public class EmailService {
             context.setVariable("userName", userName);
             context.setVariable("link", link);
 
-            String html = templateEngine.process("templates/emails/email-verification", context);
+            String html = templateEngine.process("emails/email-verification", context);
 
             helper.setText(html, true);
 
@@ -54,7 +54,7 @@ public class EmailService {
             Context context = new Context();
             context.setVariable("userName", userName);
 
-            String html = templateEngine.process("templates/emails/email-welcome", context);
+            String html = templateEngine.process("emails/email-welcome", context);
             helper.setText(html, true);
 
             mailSender.send(message);

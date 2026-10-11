@@ -1,5 +1,9 @@
 package dev.utfpr.daedalusshadow.authentication.refreshtoken;
 
+import dev.utfpr.daedalusshadow.authentication.model.dto.LoginResponseDto;
+import dev.utfpr.daedalusshadow.exception.exceptiontypes.ExpiredTokenException;
+import dev.utfpr.daedalusshadow.exception.exceptiontypes.InvalidTokenException;
+import dev.utfpr.daedalusshadow.security.JwtService;
 import dev.utfpr.daedalusshadow.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,8 +20,7 @@ import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenServiceTest {
@@ -27,6 +30,9 @@ class RefreshTokenServiceTest {
 
     @Mock
     private Clock clock;
+
+    @Mock
+    private JwtService jwtService;
 
     @InjectMocks
     private RefreshTokenService refreshTokenService;
@@ -44,7 +50,8 @@ class RefreshTokenServiceTest {
 
         refreshTokenService = new RefreshTokenService(
                 refreshTokenRepository,
-                fixedClock
+                fixedClock,
+                jwtService
         );
 
         ReflectionTestUtils.setField(
@@ -100,5 +107,134 @@ class RefreshTokenServiceTest {
                 first.getRefreshToken(),
                 second.getRefreshToken()
         );
+    }
+
+    @Test
+    void shouldRefreshAccessTokenSuccessfully() {
+        User user = new User();
+
+        RefreshToken oldToken = new RefreshToken();
+        oldToken.setUser(user);
+        oldToken.setRefreshToken("old-refresh-token");
+        oldToken.setExpiryDate(fixedNow.plusSeconds(3600));
+        oldToken.setRevoked(false);
+
+        when(refreshTokenRepository.findByRefreshToken("old-refresh-token"))
+                .thenReturn(java.util.Optional.of(oldToken));
+
+        when(refreshTokenRepository.save(any(RefreshToken.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        when(jwtService.generateAccessToken(user)).thenReturn("new-access-token");
+
+        LoginResponseDto result = refreshTokenService.refreshAccessToken("old-refresh-token");
+
+        assertNotNull(result);
+        assertNotNull(result.accessToken());
+        assertNotNull(result.refreshToken());
+
+        assertNotEquals("old-refresh-token", result.refreshToken());
+
+        assertTrue(oldToken.isRevoked());
+
+        verify(refreshTokenRepository).findByRefreshToken("old-refresh-token");
+        verify(refreshTokenRepository, times(2)).save(any(RefreshToken.class));
+    }
+
+    @Test
+    void shouldThrowInvalidTokenExceptionWhenRefreshTokenDoesNotExist() {
+        when(refreshTokenRepository.findByRefreshToken("invalid-token"))
+                .thenReturn(java.util.Optional.empty());
+
+        assertThrows(
+                InvalidTokenException.class,
+                () -> refreshTokenService.refreshAccessToken("invalid-token")
+        );
+
+        verify(refreshTokenRepository).findByRefreshToken("invalid-token");
+        verify(refreshTokenRepository, never()).save(any(RefreshToken.class));
+        verify(refreshTokenRepository, never()).delete(any(RefreshToken.class));
+    }
+
+    @Test
+    void shouldThrowInvalidTokenExceptionWhenRefreshTokenIsRevoked() {
+        RefreshToken revokedToken = new RefreshToken();
+        revokedToken.setRefreshToken("revoked-token");
+        revokedToken.setRevoked(true);
+
+        when(refreshTokenRepository.findByRefreshToken("revoked-token"))
+                .thenReturn(java.util.Optional.of(revokedToken));
+
+        InvalidTokenException exception = assertThrows(
+                InvalidTokenException.class,
+                () -> refreshTokenService.refreshAccessToken("revoked-token")
+        );
+
+        assertEquals("Refresh token already revoked.", exception.getMessage());
+
+        verify(refreshTokenRepository).findByRefreshToken("revoked-token");
+        verify(refreshTokenRepository, never()).save(any(RefreshToken.class));
+        verify(refreshTokenRepository, never()).delete(any(RefreshToken.class));
+    }
+
+    @Test
+    void shouldThrowExpiredTokenExceptionAndDeleteTokenWhenExpired() {
+        User user = new User();
+
+        RefreshToken expiredToken = new RefreshToken();
+        expiredToken.setUser(user);
+        expiredToken.setRefreshToken("expired-token");
+        expiredToken.setExpiryDate(fixedNow.minusSeconds(1));
+        expiredToken.setRevoked(false);
+
+        when(refreshTokenRepository.findByRefreshToken("expired-token"))
+                .thenReturn(java.util.Optional.of(expiredToken));
+
+        ExpiredTokenException exception = assertThrows(
+                ExpiredTokenException.class,
+                () -> refreshTokenService.refreshAccessToken("expired-token")
+        );
+
+        assertEquals(
+                "Refresh token expired. Please login again.",
+                exception.getMessage()
+        );
+
+        verify(refreshTokenRepository).delete(expiredToken);
+        verify(refreshTokenRepository, never()).save(any(RefreshToken.class));
+    }
+
+    @Test
+    void shouldRevokeOldTokenBeforeSavingNewRefreshToken() {
+        User user = new User();
+
+        RefreshToken oldToken = new RefreshToken();
+        oldToken.setUser(user);
+        oldToken.setRefreshToken("old-refresh-token");
+        oldToken.setExpiryDate(fixedNow.plusSeconds(3600));
+        oldToken.setRevoked(false);
+
+        when(refreshTokenRepository.findByRefreshToken("old-refresh-token"))
+                .thenReturn(java.util.Optional.of(oldToken));
+
+        when(refreshTokenRepository.save(any(RefreshToken.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        refreshTokenService.refreshAccessToken("old-refresh-token");
+
+        ArgumentCaptor<RefreshToken> captor =
+                ArgumentCaptor.forClass(RefreshToken.class);
+
+        verify(refreshTokenRepository, times(2))
+                .save(captor.capture());
+
+        java.util.List<RefreshToken> savedTokens = captor.getAllValues();
+
+        assertSame(oldToken, savedTokens.get(0));
+        assertTrue(savedTokens.get(0).isRevoked());
+
+        assertNotSame(oldToken, savedTokens.get(1));
+        assertEquals(user, savedTokens.get(1).getUser());
+        assertFalse(savedTokens.get(1).isRevoked());
     }
 }
