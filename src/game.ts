@@ -27,15 +27,18 @@ export default class Demo extends Phaser.Scene {
   exitPortalStatic: any;
   exitZone: any;
   escKey?: Phaser.Input.Keyboard.Key;
+  pauseKey?: Phaser.Input.Keyboard.Key;
   startTime: number = 0;
   stageId: number = 1;
+  resumeProgress = true;
 
   constructor() {
     super("demo");
   }
 
-  init(data: { stageId?: number }) {
+  init(data: { stageId?: number; resume?: boolean }) {
     this.stageId = data?.stageId || 1;
+    this.resumeProgress = data?.resume ?? true;
   }
 
   preload() {
@@ -46,10 +49,13 @@ export default class Demo extends Phaser.Scene {
     loadSprites(this);
   }
 
-  create() {
+  async create() {
     this.startTime = Date.now();
-    this.escKey = this.input.keyboard.addKey(
+    this.escKey = this.input.keyboard?.addKey(
       Phaser.Input.Keyboard.KeyCodes.ESC
+    );
+    this.pauseKey = this.input.keyboard?.addKey(
+      Phaser.Input.Keyboard.KeyCodes.P
     );
 
     const mapWidth = 43;
@@ -168,7 +174,10 @@ export default class Demo extends Phaser.Scene {
   }
 
   update() {
-    if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
+    if (
+      (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) ||
+      (this.pauseKey && Phaser.Input.Keyboard.JustDown(this.pauseKey))
+    ) {
       this.scene.launch("PauseScene");
       this.scene.pause();
       return;
@@ -239,6 +248,7 @@ const config: Phaser.Types.Core.GameConfig = {
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
+    fullscreenTarget: "game-container",
     width: 1280,
     height: 720,
   },
