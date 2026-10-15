@@ -1,0 +1,8 @@
+package dev.utfpr.daedalusshadow;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "app")
+public record AppProperties(
+        String backendUrl, String frontendUrl
+) {}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Verifique sua conta - Daedalus' Shadow</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 40px 16px;
+            background-color: #080A0F;
+            font-family: 'Inter', Arial, sans-serif;
+            color: #B6B7C0;
+        }
+
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #0B0E13;
+            border: 1px solid #393321;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 38px 28px 0;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #E7D7A5;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 34px;
+            font-weight: 600;
+            line-height: 1.2;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            margin: 12px 0 0;
+            color: #777985;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.6;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .ornament {
+            width: 100%;
+            margin-top: 25px;
+            border-collapse: collapse;
+        }
+
+        .ornament .line {
+            width: 45%;
+            border-top: 1px solid #29271F;
+        }
+
+        .ornament .diamond {
+            width: 10%;
+            padding: 0 10px;
+            color: #C7AA52;
+            font-family: Georgia, serif;
+            font-size: 17px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px 36px 38px;
+            text-align: center;
+        }
+
+        .content p {
+            margin: 0;
+            color: #B6B7C0;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .greeting {
+            margin-bottom: 20px !important;
+            font-size: 16px !important;
+        }
+
+        .greeting strong {
+            color: #E7D7A5;
+            font-weight: 600;
+        }
+
+        .description {
+            margin-bottom: 16px !important;
+        }
+
+        .secondary-text {
+            margin-bottom: 28px !important;
+            color: #92949E !important;
+            font-size: 13px !important;
+        }
+
+        .button-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #211C11;
+            border: 1px solid #C7AA52;
+            border-radius: 2px;
+            color: #E7D7A5 !important;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .warning {
+            margin-top: 30px !important;
+            color: #777985 !important;
+            font-size: 12px !important;
+            line-height: 1.8 !important;
+        }
+
+        .footer {
+            padding: 22px 24px;
+            background-color: #090B10;
+            border-top: 1px solid #29271F;
+            text-align: center;
+        }
+
+        .footer p {
+            margin: 0;
+            color: #777985;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .header {
+                padding: 30px 18px 0;
+            }
+
+            .header h1 {
+                font-size: 28px;
+                letter-spacing: 3px;
+            }
+
+            .subtitle {
+                font-size: 10px;
+                letter-spacing: 2px;
+            }
+
+            .content {
+                padding: 25px 22px 30px;
+            }
+
+            .button {
+                padding: 13px 20px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-container">
+
+    <div class="header">
+        <h1>Verificação</h1>
+
+        <p class="subtitle">
+            Confirmação de e-mail
+        </p>
+
+        <table class="ornament"
+               role="presentation"
+               cellspacing="0"
+               cellpadding="0"
+               border="0">
+            <tr>
+                <td class="line"></td>
+                <td class="diamond">&#9671;</td>
+                <td class="line"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="content">
+
+        <p class="greeting">
+            Olá, <strong th:text="${userName}">jogador</strong>!
+        </p>
+
+        <p class="description">
+            Seja bem-vindo ao Daedalus' Shadow!
+            Você está a um passo de iniciar sua jornada.
+        </p>
+
+        <p class="secondary-text">
+            Confirme seu endereço de e-mail clicando no botão abaixo.
+            Após ativar sua conta, você estará pronto para explorar
+            os labirintos e testar seu raciocínio lógico.
+        </p>
+
+        <div class="button-container">
+            <a class="button" th:href="${link}">
+                Verificar minha conta
+            </a>
+        </div>
+
+        <p class="warning">
+            Se você não criou uma conta no Daedalus' Shadow,
+            pode ignorar este e-mail com segurança.
+        </p>
+
+    </div>
+
+    <div class="footer">
+        <p>
+            DAEDALUS' SHADOW &copy; 2026
+        </p>
+    </div>
+
+</div>
+</body>
+</html>
