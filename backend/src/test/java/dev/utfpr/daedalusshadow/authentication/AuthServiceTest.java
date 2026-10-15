@@ -6,8 +6,10 @@ import dev.utfpr.daedalusshadow.authentication.authenticationprovider.Authentica
 import dev.utfpr.daedalusshadow.authentication.authenticationprovider.AuthenticationProviderType;
 import dev.utfpr.daedalusshadow.authentication.emailverificationtoken.EmailVerificationToken;
 import dev.utfpr.daedalusshadow.authentication.emailverificationtoken.EmailVerificationTokenRepository;
+import dev.utfpr.daedalusshadow.authentication.model.OAuth2TokenExchange;
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginRequestDto;
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginResponseDto;
+import dev.utfpr.daedalusshadow.authentication.oauth2.OAuth2ExchangeStorageService;
 import dev.utfpr.daedalusshadow.authentication.refreshtoken.RefreshToken;
 import dev.utfpr.daedalusshadow.authentication.refreshtoken.RefreshTokenService;
 import dev.utfpr.daedalusshadow.email.EmailService;
@@ -68,6 +70,9 @@ class AuthServiceTest {
 
     @Mock
     private AuthenticationProviderService authenticationProviderService;
+
+    @Mock
+    private OAuth2ExchangeStorageService oAuth2ExchangeStorageService;
 
     @BeforeEach
     void setUp() {
@@ -512,5 +517,87 @@ class AuthServiceTest {
         verifyNoInteractions(passwordEncoder);
         verifyNoInteractions(jwtService);
         verifyNoInteractions(refreshTokenService);
+    }
+
+    @Test
+    @DisplayName("Should exchange code for access and refresh tokens")
+    void shouldExchangeCodeSuccessfully() {
+
+        String code = "abc123";
+        UUID userId = UUID.randomUUID();
+
+        OAuth2TokenExchange exchange = new OAuth2TokenExchange(
+                userId,
+                Instant.now().plusSeconds(30)
+        );
+
+        User user = new User();
+        user.setId(userId);
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setRefreshToken("refresh-token");
+
+        when(oAuth2ExchangeStorageService.consume(code)).thenReturn(exchange);
+
+        when(userService.findEntityById(userId)).thenReturn(user);
+
+        when(jwtService.generateAccessToken(user)).thenReturn("access-token");
+
+        when(refreshTokenService.generateRefreshToken(user)).thenReturn(refreshToken);
+
+        LoginResponseDto response = authService.exchange(code);
+
+        assertAll(
+                () -> assertNotNull(response),
+                () -> assertEquals("access-token", response.accessToken()),
+                () -> assertEquals("refresh-token", response.refreshToken())
+        );
+
+        verify(oAuth2ExchangeStorageService).consume(code);
+        verify(userService).findEntityById(userId);
+        verify(jwtService).generateAccessToken(user);
+        verify(refreshTokenService).generateRefreshToken(user);
+    }
+
+    @Test
+    @DisplayName("Should throw exception when exchange code is invalid")
+    void shouldThrowExceptionWhenCodeIsInvalid() {
+        String code = "invalid-code";
+
+        when(oAuth2ExchangeStorageService.consume(code)).thenThrow(new InvalidTokenException("Invalid exchange code"));
+
+        assertThrows(
+                InvalidTokenException.class,
+                () -> authService.exchange(code)
+        );
+
+        verify(oAuth2ExchangeStorageService).consume(code);
+
+        verifyNoInteractions(
+                userService,
+                jwtService,
+                refreshTokenService
+        );
+    }
+
+    @Test
+    @DisplayName("Should throw exception when exchange code is expired")
+    void shouldThrowExceptionWhenCodeIsExpired() {
+        String code = "expired-code";
+
+        when(oAuth2ExchangeStorageService.consume(code)).thenThrow(new ExpiredTokenException("Expired exchange token"));
+
+        assertThrows(
+                ExpiredTokenException.class,
+                () -> authService.exchange(code)
+        );
+
+        verify(oAuth2ExchangeStorageService).consume(code);
+
+        verifyNoInteractions(
+                userService,
+                jwtService,
+                refreshTokenService
+        );
     }
 }
