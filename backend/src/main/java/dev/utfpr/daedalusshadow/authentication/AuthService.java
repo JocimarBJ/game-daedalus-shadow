@@ -5,8 +5,10 @@ import dev.utfpr.daedalusshadow.authentication.authenticationprovider.Authentica
 import dev.utfpr.daedalusshadow.authentication.authenticationprovider.AuthenticationProviderService;
 import dev.utfpr.daedalusshadow.authentication.emailverificationtoken.EmailVerificationToken;
 import dev.utfpr.daedalusshadow.authentication.emailverificationtoken.EmailVerificationTokenRepository;
+import dev.utfpr.daedalusshadow.authentication.model.OAuth2TokenExchange;
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginRequestDto;
 import dev.utfpr.daedalusshadow.authentication.model.dto.LoginResponseDto;
+import dev.utfpr.daedalusshadow.authentication.oauth2.OAuth2ExchangeStorageService;
 import dev.utfpr.daedalusshadow.authentication.refreshtoken.RefreshTokenService;
 import dev.utfpr.daedalusshadow.email.EmailService;
 import dev.utfpr.daedalusshadow.exception.exceptiontypes.EmailAlreadyVerifiedException;
@@ -39,6 +41,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationProviderService authenticationProviderService;
     private final EmailService emailService;
+    private final OAuth2ExchangeStorageService oAuth2ExchangeStorageService;
 
     @Transactional
     public LoginResponseDto localLogin(LoginRequestDto loginRequestDto) {
@@ -130,6 +133,17 @@ public class AuthService {
         User user = tokenEntity.getUser();
 
         emailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
+    }
+
+    public LoginResponseDto exchange(String code){
+        OAuth2TokenExchange exchange = oAuth2ExchangeStorageService.consume(code);
+
+        User user = userService.findEntityById(exchange.userId());
+
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = refreshTokenService.generateRefreshToken(user).getRefreshToken();
+
+        return new LoginResponseDto(accessToken, refreshToken);
     }
 
     private EmailVerificationToken generateToken(User user){
