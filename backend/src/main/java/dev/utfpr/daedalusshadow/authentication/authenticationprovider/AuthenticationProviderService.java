@@ -29,7 +29,19 @@ public class AuthenticationProviderService {
         return repository.findByUserAndProvider(user, AuthenticationProviderType.LOCAL);
     }
 
+    @Transactional
+    public AuthenticationProvider createGoogleProvider(User user, String sub){
+        AuthenticationProvider provider = new AuthenticationProvider();
+        provider.setUser(user);
+        provider.setProvider(AuthenticationProviderType.GOOGLE);
+        provider.setProviderUserId(sub);
+        return repository.save(provider);
+    }
 
-    // createGoogleProvider
-    // findGoogleProvider
+    @Transactional(readOnly = true)
+    public Optional<AuthenticationProvider> findGoogleProvider(
+            String googleSubject
+    ) {
+        return repository.findWithUser(AuthenticationProviderType.GOOGLE, googleSubject);
+    }
 }

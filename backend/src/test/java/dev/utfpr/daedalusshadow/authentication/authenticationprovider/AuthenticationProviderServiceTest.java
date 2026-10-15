@@ -121,4 +121,106 @@ class AuthenticationProviderServiceTest {
                 AuthenticationProviderType.LOCAL
         );
     }
+
+    @Test
+    @DisplayName("Should create Google authentication provider")
+    void shouldCreateGoogleProvider() {
+
+        User user = new User();
+        user.setId(UUID.randomUUID());
+
+        AuthenticationProvider savedProvider = new AuthenticationProvider();
+        savedProvider.setUser(user);
+        savedProvider.setProvider(AuthenticationProviderType.GOOGLE);
+        savedProvider.setProviderUserId("google-sub");
+
+        when(repository.save(any(AuthenticationProvider.class))).thenReturn(savedProvider);
+
+        AuthenticationProvider result = providerService.createGoogleProvider(user, "google-sub");
+
+        assertNotNull(result);
+        assertEquals(AuthenticationProviderType.GOOGLE, result.getProvider());
+        assertEquals("google-sub", result.getProviderUserId());
+        assertEquals(user, result.getUser());
+
+        verify(repository).save(any(AuthenticationProvider.class));
+    }
+
+    @Test
+    @DisplayName("Should save Google provider with correct data")
+    void shouldSaveGoogleProviderWithCorrectData() {
+
+        User user = new User();
+        UUID uuid = UUID.randomUUID();
+        user.setId(uuid);
+        user.setUsername("Pedro Paulo");
+        user.setEmail("pedro@gmail.com");
+        user.setEnabled(true);
+
+        AuthenticationProvider provider = new AuthenticationProvider();
+        provider.setId(UUID.randomUUID());
+        provider.setUser(user);
+        provider.setProvider(AuthenticationProviderType.GOOGLE);
+        provider.setProviderUserId("google-sub");
+
+        when(repository.save(any(AuthenticationProvider.class))).thenReturn(provider);
+
+        AuthenticationProvider result = providerService.createGoogleProvider(user, "google-sub");
+
+        ArgumentCaptor<AuthenticationProvider> captor = ArgumentCaptor.forClass(AuthenticationProvider.class);
+
+        verify(repository).save(captor.capture());
+
+        AuthenticationProvider saved = captor.getValue();
+
+        assertEquals(AuthenticationProviderType.GOOGLE, saved.getProvider());
+        assertEquals("google-sub", saved.getProviderUserId());
+
+        assertEquals(uuid, saved.getUser().getId());
+        assertEquals("Pedro Paulo", saved.getUser().getUsername());
+        assertEquals("pedro@gmail.com", saved.getUser().getEmail());
+
+        assertEquals(provider, result);
+    }
+
+    @Test
+    @DisplayName("Should find Google authentication provider")
+    void shouldFindGoogleProvider() {
+
+        AuthenticationProvider provider = new AuthenticationProvider();
+
+        when(repository.findWithUser(
+                AuthenticationProviderType.GOOGLE,
+                "google-sub"
+        )).thenReturn(Optional.of(provider));
+
+        Optional<AuthenticationProvider> result =  providerService.findGoogleProvider("google-sub");
+
+        assertTrue(result.isPresent());
+        assertEquals(provider, result.get());
+
+        verify(repository).findWithUser(
+                AuthenticationProviderType.GOOGLE,
+                "google-sub"
+        );
+    }
+
+    @Test
+    @DisplayName("Should return empty when Google authentication provider is not found")
+    void shouldReturnEmptyWhenGoogleProviderIsNotFound() {
+
+        when(repository.findWithUser(
+                AuthenticationProviderType.GOOGLE,
+                "google-sub"
+        )).thenReturn(Optional.empty());
+
+        Optional<AuthenticationProvider> result = providerService.findGoogleProvider("google-sub");
+
+        assertTrue(result.isEmpty());
+
+        verify(repository).findWithUser(
+                AuthenticationProviderType.GOOGLE,
+                "google-sub"
+        );
+    }
 }

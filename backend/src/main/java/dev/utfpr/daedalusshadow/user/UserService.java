@@ -45,6 +45,22 @@ public class UserService {
     }
 
     @Transactional
+    public User saveGoogle(String email, String name){
+        if(userRepository.existsByEmail(email)){
+            throw new EmailAlreadyInUseException();
+        }
+
+        User user = new User();
+        user.setUsername(name);
+        user.setEmail(email);
+        user.setEnabled(true);
+        user.setCreatedAt(Instant.now());
+
+        // ENVIAR UM EMAIL DE BOAS VINDAS PARA O USUÁRIO
+        return userRepository.save(user);
+    }
+
+    @Transactional
     public void delete(UUID userId){
         userRepository.deleteById(userId);
     }
