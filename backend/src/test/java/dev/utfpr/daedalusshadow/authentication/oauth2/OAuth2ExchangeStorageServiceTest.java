@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +26,7 @@ class OAuth2ExchangeStorageServiceTest {
     void shouldConsumeValidCode() {
 
         OAuth2TokenExchange exchange = new OAuth2TokenExchange(
-                1L, Instant.now().plusSeconds(30)
+                UUID.randomUUID(), Instant.now().plusSeconds(30)
         );
 
         service.save("code", exchange);
@@ -40,7 +41,7 @@ class OAuth2ExchangeStorageServiceTest {
     void shouldNotAllowCodeReuse() {
 
         OAuth2TokenExchange exchange = new OAuth2TokenExchange(
-                1L, Instant.now().plusSeconds(60)
+                UUID.randomUUID(), Instant.now().plusSeconds(60)
         );
 
         service.save("code", exchange);
@@ -67,7 +68,7 @@ class OAuth2ExchangeStorageServiceTest {
     void shouldThrowExceptionWhenCodeIsExpired() {
 
         OAuth2TokenExchange exchange = new OAuth2TokenExchange(
-                1L,
+                UUID.randomUUID(),
                 Instant.now().minusSeconds(60)
         );
 
@@ -84,7 +85,7 @@ class OAuth2ExchangeStorageServiceTest {
     void shouldRemoveExpiredCodeAfterExpiration() {
 
         OAuth2TokenExchange exchange = new OAuth2TokenExchange(
-                1L,
+                UUID.randomUUID(),
                 Instant.now().minusSeconds(60)
         );
 
