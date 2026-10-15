@@ -5,6 +5,7 @@ import dev.utfpr.daedalusshadow.authentication.authenticationprovider.Authentica
 import dev.utfpr.daedalusshadow.email.EmailService;
 import dev.utfpr.daedalusshadow.user.User;
 import dev.utfpr.daedalusshadow.user.UserService;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -18,9 +19,10 @@ public class GoogleOAuth2UserService extends OidcUserService { // Posteriormente
     private final AuthenticationProviderService authenticationProviderService;
     private final EmailService emailService;
 
+
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest){
-        OidcUser oidcUser = super.loadUser(userRequest);
+        OidcUser oidcUser = loadOidcUser(userRequest);
 
         String sub = oidcUser.getSubject();
         String email = oidcUser.getEmail();
@@ -36,5 +38,9 @@ public class GoogleOAuth2UserService extends OidcUserService { // Posteriormente
         }
 
         return oidcUser;
+    }
+
+    protected OidcUser loadOidcUser(OidcUserRequest userRequest) {
+        return super.loadUser(userRequest);
     }
 }
