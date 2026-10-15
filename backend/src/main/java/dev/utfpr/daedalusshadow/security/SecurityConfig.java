@@ -1,5 +1,7 @@
 package dev.utfpr.daedalusshadow.security;
 
+import dev.utfpr.daedalusshadow.authentication.oauth2.GoogleOAuth2UserService;
+import dev.utfpr.daedalusshadow.authentication.oauth2.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,9 +22,11 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
+
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, GoogleOAuth2UserService googleOAuth2UserService) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -45,6 +49,13 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth ->
+                        oauth
+                                .userInfoEndpoint(user ->
+                                        user.oidcUserService(googleOAuth2UserService)
+                                )
+                                .successHandler(oauth2AuthenticationSuccessHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
