@@ -144,4 +144,43 @@ class UserServiceTest {
 
         verify(userRepository).deleteById(userId);
     }
+
+    @Test
+    @DisplayName("Should successfully save a Google user")
+    void saveGoogleSuccessfully() {
+        String email = "pedro@gmail.com";
+        String name = "Pedro Paulo";
+
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        User savedUser = new User();
+        savedUser.setId(UUID.randomUUID());
+        savedUser.setEmail(email);
+        savedUser.setUsername(name);
+        savedUser.setEnabled(true);
+
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        User result = userService.saveGoogle(email, name);
+
+        assertThat(result.getEmail()).isEqualTo(email);
+        assertThat(result.isEnabled()).isTrue();
+
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should not save a Google user when email is already in use")
+    void saveGoogleWithUsedEmail() {
+        String email = "pedro@gmail.com";
+
+        when(userRepository.existsByEmail(email)).thenReturn(true);
+
+        assertThrows(
+                EmailAlreadyInUseException.class,
+                () -> userService.saveGoogle(email, "Pedro")
+        );
+
+        verify(userRepository, never()).save(any());
+    }
 }
