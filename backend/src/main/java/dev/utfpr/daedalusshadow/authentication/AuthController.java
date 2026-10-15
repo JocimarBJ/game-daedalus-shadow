@@ -48,4 +48,9 @@ public class AuthController {
         LoginResponseDto response = refreshTokenService.refreshAccessToken(refreshToken);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/oauth2/exchange")
+    public ResponseEntity<LoginResponseDto> exchange(@RequestParam String code){
+        return ResponseEntity.ok(authService.exchange(code));
+    }
 }
