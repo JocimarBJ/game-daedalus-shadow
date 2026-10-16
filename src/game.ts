@@ -10,6 +10,7 @@ import { MainMenuScene } from "./scenes/main-menu-scene";
 import { StageSelectScene } from "./scenes/stage-select-scene";
 import { PauseScene } from "./scenes/pause-scene";
 import { VictoryScene } from "./scenes/victory-scene";
+import { IntroScene } from "./scenes/intro-scene";
 import { authService } from "./services/auth-service";
 
 const enableDynamicLighting = true;
@@ -31,6 +32,20 @@ export default class Demo extends Phaser.Scene {
   startTime: number = 0;
   stageId: number = 1;
   resumeProgress = true;
+
+  private resizeCameraToCoverWorld(gameSize: Phaser.Structs.Size): void {
+    const bounds = this.cameras.main.getBounds();
+    if (bounds.width <= 0 || bounds.height <= 0) {
+      return;
+    }
+
+    const zoom = Math.max(
+      1,
+      gameSize.width / bounds.width,
+      gameSize.height / bounds.height
+    );
+    this.cameras.main.setZoom(zoom);
+  }
 
   constructor() {
     super("demo");
@@ -130,6 +145,19 @@ export default class Demo extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, widthInPixels, heightInPixels);
     this.cameras.main.setBounds(0, 0, widthInPixels, heightInPixels);
+    this.scale.on(
+      Phaser.Scale.Events.RESIZE,
+      this.resizeCameraToCoverWorld,
+      this
+    );
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(
+        Phaser.Scale.Events.RESIZE,
+        this.resizeCameraToCoverWorld,
+        this
+      );
+    });
+    this.resizeCameraToCoverWorld(this.scale.gameSize);
     this.player = createPlayer(this, entranceX * 32 + 16, 64);
     this.player.setDepth(10);
     this.exitPortal.setDepth(20);
@@ -192,6 +220,7 @@ export default class Demo extends Phaser.Scene {
 }
 
 const sceneMap: Record<string, any> = {
+  intro: IntroScene,
   login: LoginScene,
   register: RegisterScene,
   email: EmailVerificationScene,
@@ -223,9 +252,10 @@ if (typeof window !== "undefined" && urlParam && urlParam !== "login" && urlPara
   }
 }
 
-const selectedInitialScene = urlParam && sceneMap[urlParam] ? sceneMap[urlParam] : LoginScene;
+const selectedInitialScene = urlParam && sceneMap[urlParam] ? sceneMap[urlParam] : IntroScene;
 
 const allScenes = [
+  IntroScene,
   LoginScene,
   RegisterScene,
   EmailVerificationScene,
@@ -244,9 +274,9 @@ const scenes = [
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: "game-container",
-  backgroundColor: "#07090d",
+  backgroundColor: "#000000",
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     fullscreenTarget: "game-container",
     width: 1280,
@@ -268,4 +298,31 @@ const config: Phaser.Types.Core.GameConfig = {
   },
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+const resizeGameToViewport = (): void => {
+  if (!game.canvas) {
+    return;
+  }
+
+  const viewport = window.visualViewport;
+  const width = Math.max(
+    1,
+    Math.round(viewport?.width ?? document.documentElement.clientWidth)
+  );
+  const height = Math.max(
+    1,
+    Math.round(viewport?.height ?? document.documentElement.clientHeight)
+  );
+
+  game.scale.resize(width, height);
+};
+
+game.events.once(Phaser.Core.Events.READY, resizeGameToViewport);
+window.addEventListener("resize", resizeGameToViewport, { passive: true });
+window.addEventListener("orientationchange", resizeGameToViewport, {
+  passive: true,
+});
+window.visualViewport?.addEventListener("resize", resizeGameToViewport, {
+  passive: true,
+});

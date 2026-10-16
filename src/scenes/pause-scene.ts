@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { centerDomOnResize } from "./scene-layout";
 
 interface GameSettings {
   masterVolume: number;
@@ -209,6 +210,7 @@ export class PauseScene extends Phaser.Scene {
     `;
 
     this.domElement = this.add.dom(centerX, centerY).createFromHTML(pauseHtml);
+    centerDomOnResize(this, this.domElement);
 
     const resumeBtn = this.domElement.getChildByID("btn-pause-resume") as HTMLButtonElement;
     const settingsBtn = this.domElement.getChildByID("btn-pause-settings") as HTMLButtonElement;

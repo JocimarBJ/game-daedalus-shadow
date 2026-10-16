@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { centerDomOnResize } from "./scene-layout";
 
 interface VictoryData {
   timeElapsed?: number;
@@ -128,6 +129,7 @@ export class VictoryScene extends Phaser.Scene {
     `;
 
     this.domElement = this.add.dom(centerX, centerY).createFromHTML(victoryHtml);
+    centerDomOnResize(this, this.domElement);
 
     const nextBtn = this.domElement.getChildByID("btn-victory-next") as HTMLButtonElement;
     const replayBtn = this.domElement.getChildByID("btn-victory-replay") as HTMLButtonElement;

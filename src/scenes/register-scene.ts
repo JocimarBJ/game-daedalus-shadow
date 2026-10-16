@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { centerDomOnResize } from "./scene-layout";
 import { authService } from "../services/auth-service";
 
 export class RegisterScene extends Phaser.Scene {
@@ -158,6 +159,7 @@ export class RegisterScene extends Phaser.Scene {
     `;
 
     this.domElement = this.add.dom(centerX, centerY).createFromHTML(formHtml);
+    centerDomOnResize(this, this.domElement);
 
     const form = this.domElement.getChildByID("register-form") as HTMLFormElement;
     const usernameInput = this.domElement.getChildByID("register-username") as HTMLInputElement;

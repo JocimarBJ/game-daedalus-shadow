@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { centerDomOnResize } from "./scene-layout";
 import { authService } from "../services/auth-service";
 
 interface VerificationData {
@@ -109,6 +110,7 @@ export class EmailVerificationScene extends Phaser.Scene {
     `;
 
     this.domElement = this.add.dom(centerX, centerY).createFromHTML(formHtml);
+    centerDomOnResize(this, this.domElement);
 
     const form = this.domElement.getChildByID("verify-form") as HTMLFormElement;
     const codeInput = this.domElement.getChildByID("verify-code") as HTMLInputElement;
