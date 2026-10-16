@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { centerDomOnResize } from "./scene-layout";
 
 interface StageInfo {
   id: number;
@@ -135,6 +136,7 @@ export class StageSelectScene extends Phaser.Scene {
     `;
 
     this.domElement = this.add.dom(centerX, centerY).createFromHTML(html);
+    centerDomOnResize(this, this.domElement);
 
     const backBtn = this.domElement.getChildByID("btn-back-menu") as HTMLButtonElement;
     if (backBtn) {

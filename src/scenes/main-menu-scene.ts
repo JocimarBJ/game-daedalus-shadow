@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { centerDomOnResize } from "./scene-layout";
 import { authService } from "../services/auth-service";
 
 interface GameSettings {
@@ -314,6 +315,7 @@ export class MainMenuScene extends Phaser.Scene {
     `;
 
     this.domElement = this.add.dom(centerX, centerY).createFromHTML(menuHtml);
+    centerDomOnResize(this, this.domElement);
 
     const continueBtn = this.domElement.getChildByID("btn-continue") as HTMLButtonElement;
     const newGameBtn = this.domElement.getChildByID("btn-new-game") as HTMLButtonElement;
